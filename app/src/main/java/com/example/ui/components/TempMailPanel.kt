@@ -183,9 +183,10 @@ fun TempMailPanel(
                             color = TextPrimary,
                         )
                         Text(
-                            text = stringResource(R.string.tempmail_subtitle),
+                            text = mailbox?.let { "Connected: ${it.providerName}" }
+                                ?: stringResource(R.string.tempmail_subtitle),
                             style = MaterialTheme.typography.labelSmall,
-                            color = NeonSkyBlue,
+                            color = if (mailbox != null) MintEmerald else NeonSkyBlue,
                         )
                     }
                 }
@@ -204,6 +205,37 @@ fun TempMailPanel(
                         text = stringResource(R.string.tempmail_open_web),
                         style = MaterialTheme.typography.labelSmall,
                     )
+                }
+            }
+
+            // Direct Temp Mail Website connections (open inside embedded panel)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                listOf(
+                    "Mail.tm" to "https://mail.tm/",
+                    "TempMail Ninja" to "https://tempmail.ninja/",
+                    "Mail.gw" to "https://mail.gw/",
+                ).forEach { (siteLabel, siteUrl) ->
+                    OutlinedButton(
+                        onClick = { onOpenTempMailWeb(siteUrl) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(36.dp)
+                            .testTag("tempmail_site_${siteLabel.lowercase().replace(" ", "_").replace(".", "_")}"),
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, GlassBorder.copy(alpha = 0.45f)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = SoftLavender),
+                    ) {
+                        Text(
+                            text = siteLabel,
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
 

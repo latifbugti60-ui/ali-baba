@@ -165,8 +165,16 @@
 
       <div class="panel-card">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
-          <h3>Temp Mail (Mail.tm)</h3>
+          <div>
+            <h3>Temp Mail</h3>
+            <span id="tempProviderBadge" style="font-size:0.75rem; color:#38bdf8;">Connecting...</span>
+          </div>
           <button class="mini-btn" id="tempMailWebBtn">Open Web</button>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="mini-btn" style="flex:1;" id="btnSiteMailTm">Mail.tm</button>
+          <button class="mini-btn" style="flex:1;" id="btnSiteNinja">TempMail Ninja</button>
+          <button class="mini-btn" style="flex:1;" id="btnSiteMailGw">Mail.gw</button>
         </div>
         <div style="display:flex; gap:8px; align-items:stretch;">
           <div class="email-box" id="tempEmailBox" style="flex:1; user-select:all;">Generating temporary email...</div>
@@ -252,8 +260,8 @@
 
     // Temp Mail (Official Mail.tm + Mail.gw fallback, plain-text rendering via textContent only)
     const TEMP_PROVIDERS = [
-      { api: "https://api.mail.tm", web: "https://mail.tm/" },
-      { api: "https://api.mail.gw", web: "https://mail.gw/" }
+      { name: "Mail.tm", api: "https://api.mail.tm", web: "https://mail.tm/" },
+      { name: "Mail.gw", api: "https://api.mail.gw", web: "https://mail.gw/" }
     ];
     let tempAddress = "";
     let tempToken = "";
@@ -263,6 +271,7 @@
     const emailBox = document.getElementById("tempEmailBox");
     const inboxList = document.getElementById("tempInboxList");
     const tempNote = document.getElementById("tempMailNote");
+    const tempProviderBadge = document.getElementById("tempProviderBadge");
     const genEmailBtn = document.getElementById("genEmailBtn");
 
     function randomStr(chars, len) {
@@ -296,7 +305,7 @@
       if (!tokRes.ok) throw new Error("Token creation failed (" + tokRes.status + ")");
       const tokJson = await tokRes.json();
       if (!tokJson.token) throw new Error("Missing auth token.");
-      return { address: addr, token: tokJson.token, api: provider.api, web: provider.web };
+      return { name: provider.name, address: addr, token: tokJson.token, api: provider.api, web: provider.web };
     }
 
     async function createTempEmail(quiet) {
@@ -304,7 +313,7 @@
       isTempBusy = true;
       genEmailBtn.disabled = true;
       emailBox.textContent = "Generating temporary email...";
-      tempNote.textContent = "Creating new real temporary inbox...";
+      tempNote.textContent = "Connecting to temporary email provider...";
       try {
         let created = null;
         let lastErr = null;
@@ -322,6 +331,8 @@
         tempApiBase = created.api;
         tempWebUrl = created.web;
         emailBox.textContent = tempAddress;
+        tempProviderBadge.textContent = "Connected: " + created.name;
+        tempProviderBadge.style.color = "#10b981";
         inboxList.replaceChildren();
         if (!quiet && navigator.clipboard) {
           navigator.clipboard.writeText(tempAddress).catch(() => {});
@@ -380,6 +391,9 @@
     }
 
     document.getElementById("tempMailWebBtn").addEventListener("click", () => openInsidePanel(tempWebUrl));
+    document.getElementById("btnSiteMailTm").addEventListener("click", () => openInsidePanel("https://mail.tm/"));
+    document.getElementById("btnSiteNinja").addEventListener("click", () => openInsidePanel("https://tempmail.ninja/"));
+    document.getElementById("btnSiteMailGw").addEventListener("click", () => openInsidePanel("https://mail.gw/"));
     genEmailBtn.addEventListener("click", () => createTempEmail(false));
     document.getElementById("refreshInboxBtn").addEventListener("click", refreshTempInbox);
     document.getElementById("copyEmailBtn").addEventListener("click", () => {

@@ -16,6 +16,7 @@ data class TempMailbox(
     val token: String,
     val baseUrl: String,
     val webUrl: String,
+    val providerName: String,
 )
 
 data class TempMailMessage(
@@ -29,9 +30,11 @@ data class TempMailMessage(
 )
 
 object TempMailRepository {
+    private data class ProviderSpec(val name: String, val apiBase: String, val webUrl: String)
+
     private val providers = listOf(
-        "https://api.mail.tm" to "https://mail.tm/",
-        "https://api.mail.gw" to "https://mail.gw/",
+        ProviderSpec("Mail.tm", "https://api.mail.tm", "https://mail.tm/"),
+        ProviderSpec("Mail.gw", "https://api.mail.gw", "https://mail.gw/"),
     )
 
     private val secureRandom = SecureRandom()
@@ -40,8 +43,10 @@ object TempMailRepository {
 
     suspend fun createMailbox(): Result<TempMailbox> = withContext(Dispatchers.IO) {
         var lastError: Throwable? = null
-        for ((apiBase, webUrl) in providers) {
-            val attempt = runCatching { createOnProvider(apiBase, webUrl) }
+        for (provider in providers) {
+            val attempt = runCatching {
+                createOnProvider(provider.name, provider.apiBase, provider.webUrl)
+            }
             if (attempt.isSuccess) {
                 return@withContext attempt
             }
@@ -50,7 +55,7 @@ object TempMailRepository {
         Result.failure(lastError ?: IllegalStateException("Temporary email providers are currently busy. Try again in a few seconds."))
     }
 
-    private fun createOnProvider(apiBase: String, webUrl: String): TempMailbox {
+    private fun createOnProvider(providerName: String, apiBase: String, webUrl: String): TempMailbox {
         val domainsJson = JSONObject(httpGet("$apiBase/domains", token = null))
         val members = domainsJson.optJSONArray("hydra:member") ?: JSONArray()
         val activeDomains = buildList {
@@ -87,6 +92,7 @@ object TempMailRepository {
             token = token,
             baseUrl = apiBase,
             webUrl = webUrl,
+            providerName = providerName,
         )
     }
 

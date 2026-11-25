@@ -307,9 +307,16 @@
         </section>
 
         <section class="card">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
-            <h2>Temp Mail</h2>
-            <a class="toolbar-btn" href="https://mail.tm/" target="_blank" rel="noopener noreferrer">Open Mail.tm</a>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+            <div>
+              <h2>Temp Mail</h2>
+              <span id="tempProviderBadge" style="font-size:0.78rem; color:var(--sky);">Connecting to Mail.tm / Mail.gw...</span>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <a class="toolbar-btn" href="https://mail.tm/" target="_blank" rel="noopener noreferrer">Mail.tm</a>
+              <a class="toolbar-btn" href="https://tempmail.ninja/" target="_blank" rel="noopener noreferrer">TempMail Ninja</a>
+              <a class="toolbar-btn" href="https://mail.gw/" target="_blank" rel="noopener noreferrer">Mail.gw</a>
+            </div>
           </div>
           <div style="display:flex; gap:8px; align-items:stretch;">
             <div class="email-box" id="tempEmailBox" style="flex:1; user-select:all;">Generating temporary email...</div>
@@ -379,8 +386,8 @@
 
       // Temp Mail (Official Mail.tm + Mail.gw fallback with safe plain-text rendering)
       var TEMP_PROVIDERS = [
-        { api: "https://api.mail.tm", web: "https://mail.tm/" },
-        { api: "https://api.mail.gw", web: "https://mail.gw/" }
+        { name: "Mail.tm", api: "https://api.mail.tm", web: "https://mail.tm/" },
+        { name: "Mail.gw", api: "https://api.mail.gw", web: "https://mail.gw/" }
       ];
       var tempAddress = "";
       var tempToken = "";
@@ -389,6 +396,7 @@
       var emailBox = document.getElementById("tempEmailBox");
       var inboxList = document.getElementById("tempInboxList");
       var tempNote = document.getElementById("tempMailNote");
+      var tempProviderBadge = document.getElementById("tempProviderBadge");
       var genEmailBtn = document.getElementById("genEmailBtn");
 
       function randomStr(chars, len) {
@@ -424,7 +432,7 @@
         if (!tokRes.ok) throw new Error("Temp token failed (HTTP " + tokRes.status + ")");
         var tokJson = await tokRes.json();
         if (!tokJson.token) throw new Error("Missing auth token.");
-        return { address: addr, token: tokJson.token, api: provider.api };
+        return { name: provider.name, address: addr, token: tokJson.token, api: provider.api };
       }
 
       async function createTempEmail(quiet) {
@@ -432,7 +440,7 @@
         isTempBusy = true;
         genEmailBtn.disabled = true;
         emailBox.textContent = "Generating temporary email...";
-        tempNote.textContent = "Creating new real temporary inbox...";
+        tempNote.textContent = "Connecting to temporary email provider...";
         try {
           var created = null;
           var lastErr = null;
@@ -449,6 +457,8 @@
           tempToken = created.token;
           tempApiBase = created.api;
           emailBox.textContent = tempAddress;
+          tempProviderBadge.textContent = "Connected: " + created.name;
+          tempProviderBadge.style.color = "var(--emerald)";
           inboxList.replaceChildren();
           if (!quiet && navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(tempAddress).catch(function () {});
