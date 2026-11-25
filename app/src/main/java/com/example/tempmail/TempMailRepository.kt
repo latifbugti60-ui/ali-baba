@@ -158,6 +158,7 @@ object TempMailRepository {
             connectTimeout = 10_000
             readTimeout = 10_000
             setRequestProperty("Accept", "application/json")
+            setRequestProperty("User-Agent", "LatifVpnControl/1.0 (Android)")
             if (!token.isNullOrBlank()) {
                 setRequestProperty("Authorization", "Bearer $token")
             }
@@ -173,6 +174,7 @@ object TempMailRepository {
             readTimeout = 10_000
             setRequestProperty("Content-Type", "application/json")
             setRequestProperty("Accept", "application/json")
+            setRequestProperty("User-Agent", "LatifVpnControl/1.0 (Android)")
         }
         OutputStreamWriter(conn.outputStream, Charsets.UTF_8).use { writer ->
             writer.write(jsonBody)

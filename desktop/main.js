@@ -1,6 +1,100 @@
 const { app, BrowserWindow, WebContentsView, ipcMain, clipboard, shell } = require("electron");
 const path = require("path");
+const crypto = require("crypto");
 const { execFile } = require("child_process");
+
+const TEMP_PROVIDERS = [
+  { name: "Mail.tm", api: "https://api.mail.tm", web: "https://mail.tm/" },
+  { name: "Mail.gw", api: "https://api.mail.gw", web: "https://mail.gw/" },
+];
+
+function secureRandomStr(chars, len) {
+  let out = "";
+  for (let i = 0; i < len; i++) {
+    out += chars[crypto.randomInt(0, chars.length)];
+  }
+  return out;
+}
+
+ipcMain.handle("tempmail:create", async () => {
+  let lastError = "Temporary email providers are currently busy.";
+  for (const provider of TEMP_PROVIDERS) {
+    try {
+      const dRes = await fetch(`${provider.api}/domains`, {
+        headers: { Accept: "application/json", "User-Agent": "LatifVpnControl/1.0" },
+      });
+      if (!dRes.ok) throw new Error(`Domain lookup failed (${dRes.status})`);
+      const dJson = await dRes.json();
+      const activeDomains = (dJson["hydra:member"] || []).filter((d) => d.isActive !== false && d.domain);
+      if (activeDomains.length === 0) throw new Error("No active domain available.");
+      const picked = activeDomains[crypto.randomInt(0, activeDomains.length)];
+      const addr = `user${secureRandomStr("abcdefghijklmnopqrstuvwxyz0123456789", 8)}@${picked.domain}`;
+      const pass = secureRandomStr("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$", 18);
+
+      const accRes = await fetch(`${provider.api}/accounts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "User-Agent": "LatifVpnControl/1.0",
+        },
+        body: JSON.stringify({ address: addr, password: pass }),
+      });
+      if (!accRes.ok) throw new Error(`Account creation failed (${accRes.status})`);
+
+      const tokRes = await fetch(`${provider.api}/token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "User-Agent": "LatifVpnControl/1.0",
+        },
+        body: JSON.stringify({ address: addr, password: pass }),
+      });
+      if (!tokRes.ok) throw new Error(`Token creation failed (${tokRes.status})`);
+      const tokJson = await tokRes.json();
+      if (!tokJson.token) throw new Error("Missing auth token.");
+
+      return { ok: true, name: provider.name, address: addr, token: tokJson.token, api: provider.api, web: provider.web };
+    } catch (err) {
+      lastError = err?.message || String(err);
+    }
+  }
+  return { ok: false, error: lastError };
+});
+
+ipcMain.handle("tempmail:messages", async (_event, { apiBase, token }) => {
+  if (!TEMP_PROVIDERS.some((p) => p.api === apiBase) || !token) {
+    return { ok: false, error: "Invalid mailbox session." };
+  }
+  try {
+    const res = await fetch(`${apiBase}/messages`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    });
+    if (!res.ok) throw new Error(`Inbox check failed (${res.status})`);
+    const json = await res.json();
+    return { ok: true, messages: json["hydra:member"] || [] };
+  } catch (err) {
+    return { ok: false, error: err?.message || "Unable to fetch inbox." };
+  }
+});
+
+ipcMain.handle("tempmail:body", async (_event, { apiBase, token, id }) => {
+  const safeId = String(id || "").replace(/[^A-Za-z0-9_-]/g, "");
+  if (!TEMP_PROVIDERS.some((p) => p.api === apiBase) || !token || !safeId) {
+    return { ok: false, error: "Invalid message request." };
+  }
+  try {
+    const res = await fetch(`${apiBase}/messages/${safeId}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    });
+    if (!res.ok) throw new Error(`Message load failed (${res.status})`);
+    const detail = await res.json();
+    return { ok: true, text: detail.text || "" };
+  } catch (err) {
+    return { ok: false, error: err?.message || "Unable to load message." };
+  }
+});
 
 const ELEVENLABS_URL = "https://elevenlabs.io/";
 const NORD_ACCOUNT_URL = "https://my.nordaccount.com/";

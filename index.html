@@ -465,8 +465,16 @@
           }
           tempNote.textContent = (quiet ? "Ready: " : "New real email ready & copied: ") + tempAddress;
         } catch (err) {
-          emailBox.textContent = tempAddress || "Tap New Email to retry";
-          tempNote.textContent = (err && err.message) ? err.message : "Unable to create temp email.";
+          var rawMsg = (err && err.message) ? String(err.message) : "";
+          var isFetchBlocked = rawMsg.toLowerCase().indexOf("failed to fetch") !== -1 || rawMsg.toLowerCase().indexOf("networkerror") !== -1;
+          tempProviderBadge.textContent = isFetchBlocked ? "Use Direct Temp Mail Web Buttons Above" : "Provider Busy";
+          tempProviderBadge.style.color = "var(--amber)";
+          emailBox.textContent = tempAddress || "Tap Mail.tm / TempMail Ninja / Mail.gw above";
+          tempNote.textContent = isFetchBlocked
+            ? (window.location.protocol === "file:"
+                ? "Local file:// pages block Temp Mail API calls. Open via GitHub Pages (https://), use the Android/Desktop app, or click Mail.tm / TempMail Ninja above."
+                : "Browser security (CORS, Ad-Blocker, or VPN) blocked the background API call. Click Mail.tm, TempMail Ninja, or Mail.gw right above to get a temporary email immediately, or run the Android / Desktop app.")
+            : rawMsg;
         } finally {
           isTempBusy = false;
           genEmailBtn.disabled = false;

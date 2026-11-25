@@ -7,5 +7,8 @@ contextBridge.exposeInMainWorld("latifControl", {
   toggleFullScreen: () => ipcRenderer.invoke("browser:toggle-fullscreen"),
   connectNordCountry: (country) => ipcRenderer.invoke("nordvpn:connect-country", country),
   disconnectNord: () => ipcRenderer.invoke("nordvpn:disconnect"),
+  createTempMailbox: () => ipcRenderer.invoke("tempmail:create"),
+  fetchTempMessages: (payload) => ipcRenderer.invoke("tempmail:messages", payload),
+  fetchTempBody: (payload) => ipcRenderer.invoke("tempmail:body", payload),
   onUrlChanged: (cb) => ipcRenderer.on("browser:url-changed", (_e, url) => cb(url)),
 });
