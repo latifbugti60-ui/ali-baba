@@ -15,18 +15,18 @@ import org.robolectric.annotation.Config
 class ExampleRobolectricTest {
 
     @Test
-    fun `app_name matches Latif AI Studio`() {
+    fun `app_name matches Latif Voice Access`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val appName = context.getString(R.string.app_name)
-        assertEquals("Latif AI Studio", appName)
+        assertEquals("Latif Voice Access", appName)
     }
 
     @Test
     fun `embedded WebView allowlist permits official ElevenLabs and auth hosts only`() {
-        assertTrue(ElevenLabsWebPolicy.shouldEmbedInWebView("https://elevenlabs.io/"))
-        assertTrue(ElevenLabsWebPolicy.shouldEmbedInWebView("https://app.elevenlabs.io/speech-synthesis"))
-        assertTrue(ElevenLabsWebPolicy.shouldEmbedInWebView("https://accounts.google.com/o/oauth2/v2/auth"))
-        assertFalse(ElevenLabsWebPolicy.shouldEmbedInWebView("https://evil.example.com/phish"))
-        assertFalse(ElevenLabsWebPolicy.shouldEmbedInWebView("http://elevenlabs.io/"))
+        assertTrue(OfficialAccessPolicy.shouldEmbedInWebView("https://elevenlabs.io/"))
+        assertTrue(OfficialAccessPolicy.shouldEmbedInWebView("https://app.elevenlabs.io/speech-synthesis"))
+        assertTrue(OfficialAccessPolicy.shouldEmbedInWebView("https://accounts.google.com/o/oauth2/v2/auth"))
+        assertFalse(OfficialAccessPolicy.shouldEmbedInWebView("https://evil.example.com/phish"))
+        assertFalse(OfficialAccessPolicy.shouldEmbedInWebView("http://elevenlabs.io/"))
     }
 }

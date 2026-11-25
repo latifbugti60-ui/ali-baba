@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Latif AI Studio"
+rootProject.name = "Latif Voice Access"
 
 include(":app")

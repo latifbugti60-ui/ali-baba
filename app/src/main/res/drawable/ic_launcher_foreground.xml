@@ -3,6 +3,6 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/img_latif_studio_icon_1795613326710"
+        android:drawable="@drawable/img_latif_voice_access_1795615537570"
         android:gravity="center" />
 </layer-list>

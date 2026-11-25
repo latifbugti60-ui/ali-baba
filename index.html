@@ -3,254 +3,161 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LATIF AI STUDIO</title>
-  <meta name="description" content="LATIF AI STUDIO — Direct official access to ElevenLabs AI Voice Studio." />
+  <title>LATIF VOICE ACCESS</title>
+  <meta name="description" content="LATIF VOICE ACCESS — Official NordVPN connection launcher (Ireland & Sweden) and direct ElevenLabs access." />
   <style>
     :root {
       --bg-deep: #060914;
-      --bg-surface: #0d1428;
+      --bg-card: rgba(13, 20, 40, 0.88);
       --blue: #3b82f6;
       --sky: #38bdf8;
       --purple: #8b5cf6;
+      --lavender: #c4b5fd;
+      --amber: #f59e0b;
       --text-primary: #f4f7ff;
       --text-secondary: #a3b4d4;
-      --border-subtle: rgba(96, 165, 250, 0.3);
+      --border: rgba(96, 165, 250, 0.32);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       min-height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
-      background-color: var(--bg-deep);
+      background: var(--bg-deep);
       color: var(--text-primary);
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow-x: hidden;
-      position: relative;
       padding: 24px;
+      position: relative;
+      overflow-x: hidden;
     }
 
-    .aurora {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-
+    .aurora { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
     .orb {
-      position: absolute;
-      border-radius: 999px;
-      filter: blur(90px);
-      opacity: 0.35;
+      position: absolute; border-radius: 999px; filter: blur(95px); opacity: 0.35;
       animation: drift 10s ease-in-out infinite alternate;
     }
-
-    .orb-blue {
-      width: 420px;
-      height: 420px;
-      background: var(--blue);
-      top: -80px;
-      left: -60px;
-    }
-
-    .orb-purple {
-      width: 440px;
-      height: 440px;
-      background: var(--purple);
-      bottom: -100px;
-      right: -80px;
-      animation-delay: -5s;
-    }
-
+    .orb-blue { width: 420px; height: 420px; background: var(--blue); top: -80px; left: -60px; }
+    .orb-purple { width: 440px; height: 440px; background: var(--purple); bottom: -100px; right: -80px; animation-delay: -5s; }
     @keyframes drift {
       0% { transform: translate(0, 0) scale(1); }
       100% { transform: translate(40px, 30px) scale(1.1); }
     }
 
-    .home-container {
+    .shell {
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 520px;
-      text-align: center;
+      max-width: 1020px;
       display: flex;
       flex-direction: column;
+      gap: 24px;
       align-items: center;
-      gap: 22px;
     }
 
-    .logo-badge {
-      width: 80px;
-      height: 80px;
+    .header { text-align: center; display: flex; flex-direction: column; gap: 8px; }
+    .header h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: 0.08em; }
+    .header p { color: var(--text-secondary); font-size: 1rem; }
+
+    .grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-radius: 22px;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
-      border: 1.5px solid var(--border-subtle);
+      padding: 24px;
       display: flex;
+      flex-direction: column;
+      gap: 16px;
+      backdrop-filter: blur(16px);
+    }
+
+    .card h2 { font-size: 1.3rem; }
+    .card p { color: var(--text-secondary); font-size: 0.94rem; line-height: 1.55; }
+
+    .server-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .server-btn {
+      background: rgba(6, 9, 20, 0.72);
+      border: 1.5px solid rgba(96, 165, 250, 0.3);
+      border-radius: 14px;
+      padding: 12px;
+      color: var(--text-primary);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .server-btn.active {
+      background: rgba(59, 130, 246, 0.22);
+      border-color: var(--sky);
+    }
+    .server-btn strong { display: block; font-size: 1rem; }
+    .server-btn span { font-size: 0.8rem; color: var(--text-secondary); }
+
+    .primary-btn {
+      width: 100%;
+      padding: 16px 20px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(56, 189, 248, 0.55);
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.98rem;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: transform 0.16s ease, box-shadow 0.22s ease;
+    }
+    .primary-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(59, 130, 246, 0.35); }
+
+    .secondary-btn {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 12px 40px rgba(59, 130, 246, 0.2);
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--lavender);
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
     }
 
-    .logo-badge svg {
-      width: 38px;
-      height: 38px;
-    }
-
-    h1 {
-      font-size: clamp(1.9rem, 4.5vw, 2.5rem);
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      color: var(--text-primary);
-    }
-
-    .subtitle {
-      font-size: 1rem;
+    .notice {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.84rem;
       color: var(--text-secondary);
       line-height: 1.5;
     }
 
-    .open-btn {
-      width: 100%;
-      margin-top: 8px;
-      padding: 20px 28px;
-      border: 1.5px solid rgba(56, 189, 248, 0.55);
-      border-radius: 20px;
-      background: linear-gradient(90deg, var(--blue), var(--purple));
-      color: #ffffff;
-      font-size: 1.08rem;
-      font-weight: 700;
-      letter-spacing: 0.09em;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      box-shadow: 0 10px 35px rgba(59, 130, 246, 0.35), 0 0 25px rgba(139, 92, 246, 0.28);
-      transition: transform 0.18s ease, box-shadow 0.25s ease;
-      animation: pulseGlow 2.4s ease-in-out infinite alternate;
-    }
-
-    .open-btn:hover {
-      transform: translateY(-2px) scale(1.01);
-      box-shadow: 0 14px 42px rgba(59, 130, 246, 0.5), 0 0 32px rgba(139, 92, 246, 0.42);
-    }
-
-    .open-btn:active {
-      transform: scale(0.97);
-    }
-
-    @keyframes pulseGlow {
-      0% { border-color: rgba(56, 189, 248, 0.45); }
-      100% { border-color: rgba(196, 181, 253, 0.9); }
-    }
-
     .browser-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      background: var(--bg-deep);
-      display: none;
-      flex-direction: column;
+      position: fixed; inset: 0; z-index: 10; background: var(--bg-deep);
+      display: none; flex-direction: column;
     }
-
-    .browser-overlay.active {
-      display: flex;
-    }
-
+    .browser-overlay.active { display: flex; }
     .browser-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 16px;
-      background: rgba(13, 20, 40, 0.94);
-      border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 12px 16px; background: rgba(13, 20, 40, 0.94); border-bottom: 1px solid var(--border);
     }
-
-    .topbar-btn {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--text-primary);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 8px 14px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .topbar-btn.primary {
-      background: linear-gradient(90deg, var(--blue), var(--purple));
-      border-color: transparent;
-    }
-
-    .url-pill {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.85rem;
-      color: var(--sky);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .browser-body {
-      flex: 1;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .browser-frame {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: #ffffff;
-    }
-
+    .browser-body { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .browser-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: none; background: #fff; }
     .fallback-card {
-      position: relative;
-      z-index: 2;
-      max-width: 480px;
-      width: 100%;
-      background: rgba(13, 20, 40, 0.92);
-      border: 1px solid var(--border-subtle);
-      border-radius: 20px;
-      padding: 28px;
-      text-align: center;
-      display: none;
-      flex-direction: column;
-      gap: 14px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      position: relative; z-index: 2; max-width: 480px; width: 100%;
+      background: rgba(13, 20, 40, 0.94); border: 1px solid var(--border);
+      border-radius: 20px; padding: 26px; text-align: center; display: none; flex-direction: column; gap: 14px;
     }
-
-    .fallback-card.visible {
-      display: flex;
-    }
-
-    .fallback-card h2 {
-      font-size: 1.25rem;
-      color: var(--text-primary);
-    }
-
-    .fallback-card p {
-      font-size: 0.94rem;
-      color: var(--text-secondary);
-      line-height: 1.55;
-    }
+    .fallback-card.visible { display: flex; }
   </style>
 </head>
 <body>
@@ -259,58 +166,87 @@
     <div class="orb orb-purple"></div>
   </div>
 
-  <main class="home-container" id="homeView">
-    <div class="logo-badge" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="2.2" stroke-linecap="round">
-        <defs>
-          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#38bdf8" />
-            <stop offset="100%" stop-color="#8b5cf6" />
-          </linearGradient>
-        </defs>
-        <path d="M4 12v0M8 7v10M12 4v16M16 7v10M20 12v0" />
-      </svg>
+  <main class="shell">
+    <header class="header">
+      <h1>LATIF VOICE ACCESS</h1>
+      <p>Official NordVPN connection launcher &amp; direct ElevenLabs studio access</p>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <h2>1. NordVPN</h2>
+        <p>Select your preferred server region and connect through the official NordVPN application or account portal.</p>
+        <div class="server-row">
+          <button class="server-btn active" type="button" data-server="Ireland">
+            <strong>Ireland</strong>
+            <span>IE • Dublin</span>
+          </button>
+          <button class="server-btn" type="button" data-server="Sweden">
+            <strong>Sweden</strong>
+            <span>SE • Stockholm</span>
+          </button>
+        </div>
+        <a class="primary-btn" id="connectNordBtn" href="https://my.nordaccount.com/" target="_blank" rel="noopener noreferrer">
+          CONNECT NORDVPN (IRELAND)
+        </a>
+        <a class="secondary-btn" href="https://nordvpn.com/download/" target="_blank" rel="noopener noreferrer">
+          Official NordVPN Apps
+        </a>
+        <div class="notice">
+          Browsers and third-party apps cannot bypass NordVPN authentication or programmatically control VPN tunnels. This button copies your selected country and opens official NordVPN.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>2. ElevenLabs</h2>
+        <p>Open the official ElevenLabs website to select available voice characters, enter text, generate audio, play back, and download.</p>
+        <button class="primary-btn" id="openElevenLabsBtn" type="button" style="margin-top:auto;">
+          OPEN ELEVENLABS
+        </button>
+      </section>
     </div>
-
-    <h1>LATIF AI STUDIO</h1>
-    <p class="subtitle">Direct official access to ElevenLabs AI Voice Studio</p>
-
-    <button class="open-btn" id="openElevenLabsBtn" type="button">
-      OPEN ELEVENLABS
-    </button>
   </main>
 
   <section class="browser-overlay" id="browserOverlay" aria-label="ElevenLabs Browser">
     <header class="browser-topbar">
-      <button class="topbar-btn" id="closeBrowserBtn" type="button">Home</button>
-      <span class="url-pill">https://elevenlabs.io</span>
-      <a class="topbar-btn primary" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer">
-        Open in New Tab
-      </a>
+      <button class="secondary-btn" id="closeBrowserBtn" type="button" style="cursor:pointer;">Home</button>
+      <span style="font-family:monospace; color:var(--sky); font-size:0.86rem;">https://elevenlabs.io</span>
+      <a class="secondary-btn" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer">Open in New Tab</a>
     </header>
     <div class="browser-body">
-      <iframe
-        id="elevenLabsFrame"
-        class="browser-frame"
-        title="ElevenLabs Official Website"
-        referrerpolicy="no-referrer-when-downgrade"
-      ></iframe>
-
+      <iframe id="elevenLabsFrame" class="browser-frame" title="ElevenLabs Official Website"></iframe>
       <div class="fallback-card" id="fallbackCard">
         <h2>Embedded Browser Blocked by ElevenLabs</h2>
-        <p>
-          ElevenLabs security headers prevent embedding inside a web frame. Open the official ElevenLabs website in a new tab to sign in, choose any AI voice character, generate speech, play back, and download.
-        </p>
-        <a class="open-btn" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
-          OPEN ELEVENLABS IN NEW TAB
-        </a>
+        <p>ElevenLabs security headers block frame embedding. Open the official ElevenLabs website in a new tab to sign in, pick voices, generate speech, and download.</p>
+        <a class="primary-btn" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer">OPEN ELEVENLABS IN NEW TAB</a>
       </div>
     </div>
   </section>
 
   <script>
     (function () {
-      var OFFICIAL_URL = "https://elevenlabs.io/";
+      var selectedServer = "Ireland";
+      var serverButtons = document.querySelectorAll(".server-btn");
+      var nordBtn = document.getElementById("connectNordBtn");
+
+      serverButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          serverButtons.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          selectedServer = btn.getAttribute("data-server") || "Ireland";
+          nordBtn.textContent = "CONNECT NORDVPN (" + selectedServer.toUpperCase() + ")";
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(selectedServer).catch(function () {});
+          }
+        });
+      });
+
+      nordBtn.addEventListener("click", function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(selectedServer).catch(function () {});
+        }
+      });
+
       var openBtn = document.getElementById("openElevenLabsBtn");
       var closeBtn = document.getElementById("closeBrowserBtn");
       var overlay = document.getElementById("browserOverlay");
@@ -322,8 +258,7 @@
         overlay.classList.add("active");
         fallback.classList.remove("visible");
         frame.style.display = "block";
-        frame.src = OFFICIAL_URL;
-
+        frame.src = "https://elevenlabs.io/";
         clearTimeout(fallbackTimer);
         fallbackTimer = setTimeout(function () {
           try {
@@ -332,9 +267,7 @@
               frame.style.display = "none";
               fallback.classList.add("visible");
             }
-          } catch (e) {
-            // Cross-origin frame loaded; keep Open in New Tab button available in top bar.
-          }
+          } catch (e) {}
         }, 2500);
       });
 

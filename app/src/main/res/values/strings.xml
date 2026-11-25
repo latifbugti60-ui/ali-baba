@@ -1,17 +1,26 @@
 <resources>
-    <string name="app_name">Latif AI Studio</string>
-    <string name="brand_headline">LATIF AI STUDIO</string>
-    <string name="brand_subtitle">Direct official access to ElevenLabs AI Voice Studio</string>
+    <string name="app_name">Latif Voice Access</string>
+    <string name="brand_headline">LATIF VOICE ACCESS</string>
+    <string name="brand_subtitle">Official NordVPN launch &amp; direct ElevenLabs studio access</string>
+
+    <string name="nordvpn_card_title">NordVPN</string>
+    <string name="nordvpn_server_label">Preferred Server Region</string>
+    <string name="server_ireland">Ireland</string>
+    <string name="server_sweden">Sweden</string>
+    <string name="action_connect_nordvpn">Connect via NordVPN</string>
+    <string name="action_open_nordvpn_account">NordVPN Account</string>
+    <string name="nordvpn_limitation_note">NordVPN does not provide a public third-party SDK to switch servers or start tunnels externally. Selecting Ireland or Sweden copies the region name and launches the official NordVPN app (or Play Store / web portal) using your own NordVPN account and Android VPN permission.</string>
+
+    <string name="elevenlabs_card_title">ElevenLabs</string>
+    <string name="elevenlabs_card_body">Access the official ElevenLabs website directly to choose voice characters, enter text, generate speech, play back, and download under your ElevenLabs account.</string>
     <string name="action_open_elevenlabs">OPEN ELEVENLABS</string>
     <string name="action_open_in_browser">Open in Browser</string>
-    <string name="action_close_browser">Home</string>
-    <string name="action_reload_page">Reload</string>
-    <string name="action_go_back">Back</string>
+
     <string name="embedding_blocked_title">Embedded View Unavailable</string>
-    <string name="embedding_blocked_body">ElevenLabs or security verification blocked embedded loading. Open the official ElevenLabs website in your browser to continue with full authentication, voice selection, playback, and downloads.</string>
-    <string name="cd_brand_logo">Latif AI Studio emblem</string>
+    <string name="embedding_blocked_body">ElevenLabs or security verification blocked embedded loading. Open the official ElevenLabs website in your browser to continue.</string>
+
+    <string name="cd_brand_logo">Latif Voice Access emblem</string>
     <string name="cd_open_external_browser">Open ElevenLabs in external browser</string>
     <string name="cd_close_webview">Return to home screen</string>
-    <string name="cd_webview_back">Navigate back</string>
     <string name="cd_webview_reload">Reload ElevenLabs</string>
 </resources>

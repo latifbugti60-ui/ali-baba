@@ -2,22 +2,23 @@ package com.example
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ExampleUnitTest {
 
     @Test
-    fun `official ElevenLabs URL constant is HTTPS`() {
-        assertEquals("https://elevenlabs.io/", ElevenLabsWebPolicy.OFFICIAL_URL)
+    fun `NordVPN servers include Ireland and Sweden`() {
+        val countries = NordVpnServer.entries.map { it.countryName }
+        assertEquals(listOf("Ireland", "Sweden"), countries)
     }
 
     @Test
-    fun `safe URL policy rejects non-HTTPS schemes`() {
-        assertFalse(ElevenLabsWebPolicy.isSafeHttpsUrl("http://elevenlabs.io"))
-        assertFalse(ElevenLabsWebPolicy.isSafeHttpsUrl("javascript:alert(1)"))
-        assertFalse(ElevenLabsWebPolicy.isSafeHttpsUrl("file:///etc/passwd"))
-        assertFalse(ElevenLabsWebPolicy.isSafeHttpsUrl(""))
-        assertFalse(ElevenLabsWebPolicy.isSafeHttpsUrl(null))
+    fun `official URLs use HTTPS and safe policy rejects non-HTTPS`() {
+        assertEquals("https://elevenlabs.io/", OfficialAccessPolicy.ELEVENLABS_URL)
+        assertEquals("https://my.nordaccount.com/", OfficialAccessPolicy.NORDVPN_ACCOUNT_URL)
+        assertFalse(OfficialAccessPolicy.isSafeHttpsUrl("http://elevenlabs.io/"))
+        assertFalse(OfficialAccessPolicy.isSafeHttpsUrl("javascript:alert(1)"))
+        assertFalse(OfficialAccessPolicy.isSafeHttpsUrl("file:///etc/passwd"))
+        assertFalse(OfficialAccessPolicy.isSafeHttpsUrl(null))
     }
 }
