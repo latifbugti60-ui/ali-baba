@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Latif Voice Access"
+rootProject.name = "Latif VPN Control"
 
 include(":app")

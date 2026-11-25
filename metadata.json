@@ -1,6 +1,6 @@
 {
-  "name": "Latif Voice Access",
-  "description": "Minimal dark studio with official NordVPN launch (Ireland & Sweden selection) and direct ElevenLabs website access.",
+  "name": "Latif VPN Control",
+  "description": "Premium dark dashboard with official NordVPN control (Ireland & Sweden) and embedded ElevenLabs browser panel.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LATIF VOICE ACCESS</title>
-  <meta name="description" content="LATIF VOICE ACCESS — Official NordVPN connection launcher (Ireland & Sweden) and direct ElevenLabs access." />
+  <title>LATIF VPN CONTROL</title>
+  <meta name="description" content="LATIF VPN CONTROL — Dark split dashboard with NordVPN control panel and embedded ElevenLabs browser workspace." />
   <style>
     :root {
       --bg-deep: #060914;
@@ -14,6 +14,7 @@
       --purple: #8b5cf6;
       --lavender: #c4b5fd;
       --amber: #f59e0b;
+      --emerald: #10b981;
       --text-primary: #f4f7ff;
       --text-secondary: #a3b4d4;
       --border: rgba(96, 165, 250, 0.32);
@@ -26,10 +27,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
       background: var(--bg-deep);
       color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+      padding: 20px;
       position: relative;
       overflow-x: hidden;
     }
@@ -49,47 +47,77 @@
     .shell {
       position: relative;
       z-index: 1;
-      width: 100%;
-      max-width: 1020px;
+      max-width: 1280px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      align-items: center;
+      gap: 16px;
+      min-height: calc(100vh - 40px);
     }
 
-    .header { text-align: center; display: flex; flex-direction: column; gap: 8px; }
-    .header h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: 0.08em; }
-    .header p { color: var(--text-secondary); font-size: 1rem; }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .header h1 { font-size: clamp(1.35rem, 3vw, 1.9rem); font-weight: 800; letter-spacing: 0.08em; }
+    .header p { color: var(--text-secondary); font-size: 0.9rem; }
 
-    .grid {
-      width: 100%;
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      background: rgba(245, 158, 11, 0.14);
+      color: var(--amber);
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 999px; background: currentColor; }
+
+    .dashboard {
+      flex: 1;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
+      grid-template-columns: minmax(300px, 380px) 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+    .dashboard.fullscreen { grid-template-columns: 1fr; }
+    .dashboard.fullscreen .left-panel { display: none; }
+
+    @media (max-width: 820px) {
+      .dashboard { grid-template-columns: 1fr; }
     }
 
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 22px;
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       backdrop-filter: blur(16px);
     }
 
-    .card h2 { font-size: 1.3rem; }
-    .card p { color: var(--text-secondary); font-size: 0.94rem; line-height: 1.55; }
+    .card h2 { font-size: 1.2rem; }
+    .card p { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
 
-    .server-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .server-btn {
+      width: 100%;
       background: rgba(6, 9, 20, 0.72);
       border: 1.5px solid rgba(96, 165, 250, 0.3);
       border-radius: 14px;
-      padding: 12px;
+      padding: 13px 14px;
       color: var(--text-primary);
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       text-align: left;
       transition: border-color 0.2s, background 0.2s;
     }
@@ -97,38 +125,33 @@
       background: rgba(59, 130, 246, 0.22);
       border-color: var(--sky);
     }
-    .server-btn strong { display: block; font-size: 1rem; }
-    .server-btn span { font-size: 0.8rem; color: var(--text-secondary); }
+    .server-btn strong { display: block; font-size: 0.98rem; }
+    .server-btn span { font-size: 0.78rem; color: var(--text-secondary); }
 
     .primary-btn {
       width: 100%;
-      padding: 16px 20px;
-      border-radius: 16px;
+      padding: 14px 18px;
+      border-radius: 14px;
       border: 1.5px solid rgba(56, 189, 248, 0.55);
       background: linear-gradient(90deg, var(--blue), var(--purple));
       color: #fff;
       font-weight: 700;
-      font-size: 0.98rem;
-      letter-spacing: 0.06em;
+      font-size: 0.92rem;
+      letter-spacing: 0.05em;
       cursor: pointer;
-      text-align: center;
-      text-decoration: none;
       transition: transform 0.16s ease, box-shadow 0.22s ease;
     }
-    .primary-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(59, 130, 246, 0.35); }
+    .primary-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(59, 130, 246, 0.32); }
 
     .secondary-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       padding: 11px 14px;
       border-radius: 12px;
-      border: 1px solid var(--border);
-      background: rgba(59, 130, 246, 0.1);
-      color: var(--lavender);
-      font-size: 0.88rem;
-      font-weight: 600;
-      text-decoration: none;
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
     }
 
     .notice {
@@ -136,9 +159,51 @@
       border: 1px solid rgba(245, 158, 11, 0.35);
       border-radius: 12px;
       padding: 12px;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       color: var(--text-secondary);
-      line-height: 1.5;
+      line-height: 1.48;
+    }
+
+    .right-panel {
+      padding: 0;
+      overflow: hidden;
+      min-height: 540px;
+    }
+    .panel-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 16px;
+      background: rgba(6, 9, 20, 0.9);
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-host { font-family: monospace; color: var(--sky); font-size: 0.85rem; }
+    .toolbar-btn {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(59, 130, 246, 0.14);
+      color: var(--sky);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .panel-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .panel-inner {
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: center;
     }
   </style>
 </head>
@@ -149,44 +214,59 @@
   </div>
 
   <main class="shell">
-    <header class="header">
-      <h1>LATIF VOICE ACCESS</h1>
-      <p>Official NordVPN connection launcher &amp; direct ElevenLabs studio access</p>
+    <header class="header" id="dashboardHeader">
+      <div>
+        <h1>LATIF VPN CONTROL</h1>
+        <p>Official NordVPN control &amp; embedded ElevenLabs workspace</p>
+      </div>
+      <div class="status-pill" id="vpnStatusPill">
+        <span class="status-dot"></span>
+        <span>Disconnected</span>
+      </div>
     </header>
 
-    <div class="grid">
-      <section class="card">
-        <h2>1. NordVPN</h2>
-        <p>Select your preferred server region and connect through the official NordVPN application or account portal.</p>
-        <div class="server-row">
-          <button class="server-btn active" type="button" data-server="Ireland">
+    <div class="dashboard" id="dashboardGrid">
+      <section class="card left-panel">
+        <h2>NordVPN Control</h2>
+        <button class="primary-btn" id="nordAccountBtn" type="button">NORDVPN ACCOUNT</button>
+
+        <button class="server-btn active" type="button" data-server="Ireland">
+          <div>
             <strong>Ireland</strong>
-            <span>IE • Dublin</span>
-          </button>
-          <button class="server-btn" type="button" data-server="Sweden">
+            <span>Dublin • EU West • Tap to Connect</span>
+          </div>
+          <span>IE</span>
+        </button>
+
+        <button class="server-btn" type="button" data-server="Sweden">
+          <div>
             <strong>Sweden</strong>
-            <span>SE • Stockholm</span>
-          </button>
-        </div>
-        <a class="primary-btn" id="connectNordBtn" href="https://my.nordaccount.com/" target="_blank" rel="noopener noreferrer">
-          CONNECT NORDVPN (IRELAND)
-        </a>
-        <a class="secondary-btn" href="https://nordvpn.com/download/" target="_blank" rel="noopener noreferrer">
-          Official NordVPN Apps
-        </a>
-        <div class="notice">
-          Browsers and third-party apps cannot bypass NordVPN authentication or programmatically control VPN tunnels. This button copies your selected country and opens official NordVPN.
+            <span>Stockholm • EU North • Tap to Connect</span>
+          </div>
+          <span>SE</span>
+        </button>
+
+        <button class="secondary-btn" id="disconnectBtn" type="button">Disconnect VPN</button>
+
+        <div class="notice" id="nordNotice">
+          Web browsers cannot read system VPN state or connect/disconnect the native NordVPN app directly. Use the <strong>Latif VPN Control</strong> Android app (native Android <code>WebView</code> + NordVPN app integration) to connect Ireland/Sweden and view live Connected / Disconnected status inside the app without opening browser tabs.
         </div>
       </section>
 
-      <section class="card">
-        <h2>2. ElevenLabs</h2>
-        <p>Open the official ElevenLabs website directly in a new tab to select available voice characters, enter text, generate audio, play back, and download.</p>
-        <a class="primary-btn" id="openElevenLabsBtn" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer" style="margin-top:auto;">
-          OPEN ELEVENLABS
-        </a>
-        <div class="notice">
-          ElevenLabs security headers block embedded iframes (&ldquo;refused to connect&rdquo;). Clicking <strong>OPEN ELEVENLABS</strong> opens the official <code>https://elevenlabs.io</code> website directly in a new browser tab under your own ElevenLabs account.
+      <section class="card right-panel">
+        <div class="panel-topbar">
+          <span class="panel-host" id="panelHost">https://elevenlabs.io/</span>
+          <button class="toolbar-btn" id="fullscreenBtn" type="button">Full Screen</button>
+        </div>
+        <div class="panel-body">
+          <div class="panel-inner" id="elevenLabsPanel">
+            <h2>Embedded ElevenLabs Browser</h2>
+            <p>Access the official ElevenLabs website inside the app to choose voices, enter text, generate speech, play back, and download.</p>
+            <button class="primary-btn" id="openElevenLabsBtn" type="button">OPEN ELEVENLABS</button>
+            <div class="notice" id="elevenLabsNotice" style="display:none;">
+              Standard web browsers block embedding <code>https://elevenlabs.io</code> inside an <code>&lt;iframe&gt;</code> (<code>X-Frame-Options</code> / <code>CSP</code>), and external tabs are disabled per app policy. Run the native Android <strong>Latif VPN Control</strong> app (or a desktop Electron/Tauri WebView shell) to render ElevenLabs directly inside this panel.
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -194,26 +274,44 @@
 
   <script>
     (function () {
-      var selectedServer = "Ireland";
-      var serverButtons = document.querySelectorAll(".server-btn");
-      var nordBtn = document.getElementById("connectNordBtn");
+      var grid = document.getElementById("dashboardGrid");
+      var header = document.getElementById("dashboardHeader");
+      var fullscreenBtn = document.getElementById("fullscreenBtn");
+      var isFull = false;
 
+      fullscreenBtn.addEventListener("click", function () {
+        isFull = !isFull;
+        grid.classList.toggle("fullscreen", isFull);
+        header.style.display = isFull ? "none" : "flex";
+        fullscreenBtn.textContent = isFull ? "Exit Full Screen" : "Full Screen";
+      });
+
+      var serverButtons = document.querySelectorAll(".server-btn");
+      var nordNotice = document.getElementById("nordNotice");
       serverButtons.forEach(function (btn) {
         btn.addEventListener("click", function () {
           serverButtons.forEach(function (b) { b.classList.remove("active"); });
           btn.classList.add("active");
-          selectedServer = btn.getAttribute("data-server") || "Ireland";
-          nordBtn.textContent = "CONNECT NORDVPN (" + selectedServer.toUpperCase() + ")";
+          var country = btn.getAttribute("data-server") || "Ireland";
           if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(selectedServer).catch(function () {});
+            navigator.clipboard.writeText(country).catch(function () {});
           }
+          nordNotice.innerHTML = "Selected <strong>" + country + "</strong> (copied). Open the native Android <strong>Latif VPN Control</strong> app to launch the official NordVPN app and track live Connected / Disconnected status.";
         });
       });
 
-      nordBtn.addEventListener("click", function () {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(selectedServer).catch(function () {});
-        }
+      document.getElementById("nordAccountBtn").addEventListener("click", function () {
+        document.getElementById("panelHost").textContent = "https://my.nordaccount.com/";
+        document.getElementById("elevenLabsNotice").style.display = "block";
+      });
+
+      document.getElementById("disconnectBtn").addEventListener("click", function () {
+        nordNotice.innerHTML = "A standard web browser cannot terminate native NordVPN tunnels. Use Disconnect inside the Android <strong>Latif VPN Control</strong> app or the official NordVPN application.";
+      });
+
+      document.getElementById("openElevenLabsBtn").addEventListener("click", function () {
+        document.getElementById("panelHost").textContent = "https://elevenlabs.io/";
+        document.getElementById("elevenLabsNotice").style.display = "block";
       });
     })();
   </script>
