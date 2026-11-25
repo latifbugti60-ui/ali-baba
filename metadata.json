@@ -1,0 +1,6 @@
+{
+  "name": "Latif AI Studio",
+  "description": "Minimal launcher providing direct access to the official ElevenLabs website inside an embedded browser with external browser fallback.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

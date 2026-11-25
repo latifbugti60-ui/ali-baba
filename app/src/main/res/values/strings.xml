@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Latif AI Studio</string>
+    <string name="brand_headline">LATIF AI STUDIO</string>
+    <string name="brand_subtitle">Direct official access to ElevenLabs AI Voice Studio</string>
+    <string name="action_open_elevenlabs">OPEN ELEVENLABS</string>
+    <string name="action_open_in_browser">Open in Browser</string>
+    <string name="action_close_browser">Home</string>
+    <string name="action_reload_page">Reload</string>
+    <string name="action_go_back">Back</string>
+    <string name="embedding_blocked_title">Embedded View Unavailable</string>
+    <string name="embedding_blocked_body">ElevenLabs or security verification blocked embedded loading. Open the official ElevenLabs website in your browser to continue with full authentication, voice selection, playback, and downloads.</string>
+    <string name="cd_brand_logo">Latif AI Studio emblem</string>
+    <string name="cd_open_external_browser">Open ElevenLabs in external browser</string>
+    <string name="cd_close_webview">Return to home screen</string>
+    <string name="cd_webview_back">Navigate back</string>
+    <string name="cd_webview_reload">Reload ElevenLabs</string>
+</resources>
