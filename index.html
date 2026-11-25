@@ -232,7 +232,7 @@
     <div class="dashboard" id="dashboardGrid">
       <section class="card left-panel">
         <h2>NordVPN Control</h2>
-        <button class="primary-btn" id="nordAccountBtn" type="button">NORDVPN ACCOUNT</button>
+        <a class="primary-btn" id="nordAccountBtn" href="https://my.nordaccount.com/" target="_blank" rel="noopener noreferrer">NORDVPN ACCOUNT</a>
 
         <button class="server-btn active" type="button" data-server="Ireland">
           <div>
@@ -253,7 +253,7 @@
         <button class="secondary-btn" id="disconnectBtn" type="button">Disconnect VPN</button>
 
         <div class="notice" id="nordNotice">
-          Standard web pages cannot directly control native NordVPN tunnels. Clicking <strong>NORDVPN ACCOUNT</strong> opens your official NordVPN account window; use the included <strong>Android APK</strong> or <strong>desktop/ Electron app</strong> for native NordVPN app launching and live VPN status.
+          Select <strong>Ireland</strong> or <strong>Sweden</strong> to copy the server name, then connect inside your NordVPN app.
         </div>
       </section>
 
@@ -266,12 +266,9 @@
           <div class="panel-inner" id="elevenLabsPanel">
             <h2>ElevenLabs Studio</h2>
             <p>Open the official ElevenLabs website to select available voices, enter text, generate speech, play back, and download under your own ElevenLabs account.</p>
-            <button class="primary-btn" id="openElevenLabsBtn" type="button">OPEN ELEVENLABS</button>
-            <a class="toolbar-btn" id="directFallbackLink" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer" style="display:none; text-decoration:none;">
-              Allow / Open ElevenLabs Directly
-            </a>
+            <a class="primary-btn" id="openElevenLabsBtn" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer">OPEN ELEVENLABS</a>
             <div class="notice" id="elevenLabsStatus">
-              On GitHub Pages (web browser), clicking <strong>OPEN ELEVENLABS</strong> launches ElevenLabs in a standalone app window because browsers block <code>&lt;iframe&gt;</code> embedding (<code>X-Frame-Options</code>). For 100% inside-window embedding with zero external windows, run the included <strong>desktop/</strong> Electron WebView app or the <strong>Android APK</strong>.
+              For docked in-window embedding without any separate browser window, run the <strong>Android APK</strong> or the <strong>desktop/</strong> Electron app in this repository.
             </div>
           </div>
         </div>
@@ -303,43 +300,12 @@
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(country).catch(function () {});
           }
-          nordNotice.innerHTML = "Selected <strong>" + country + "</strong> (copied to clipboard). Open the NordVPN app on your device and paste or pick <strong>" + country + "</strong>.";
+          nordNotice.innerHTML = "Selected <strong>" + country + "</strong> (copied to clipboard). Open the NordVPN app on your device and select <strong>" + country + "</strong>.";
         });
       });
 
-      function openAppWindow(url, name) {
-        var win = window.open(
-          url,
-          name,
-          "popup=yes,width=1180,height=800,menubar=no,toolbar=no,location=yes,status=no"
-        );
-        return win;
-      }
-
-      document.getElementById("nordAccountBtn").addEventListener("click", function () {
-        document.getElementById("panelHost").textContent = "https://my.nordaccount.com/";
-        var win = openAppWindow("https://my.nordaccount.com/", "latif_nord_account");
-        if (!win) {
-          nordNotice.innerHTML = "Popup blocked by browser. Allow popups for this site or open <strong>https://my.nordaccount.com/</strong> directly.";
-        }
-      });
-
       document.getElementById("disconnectBtn").addEventListener("click", function () {
-        nordNotice.innerHTML = "A web browser cannot disconnect your system NordVPN tunnel. Disconnect directly inside the official NordVPN app or use the Android app.";
-      });
-
-      var fallbackLink = document.getElementById("directFallbackLink");
-      var statusNote = document.getElementById("elevenLabsStatus");
-      document.getElementById("openElevenLabsBtn").addEventListener("click", function () {
-        document.getElementById("panelHost").textContent = "https://elevenlabs.io/";
-        var win = openAppWindow("https://elevenlabs.io/", "latif_elevenlabs_studio");
-        if (win) {
-          fallbackLink.style.display = "none";
-          statusNote.innerHTML = "Opened <strong>https://elevenlabs.io/</strong> in a standalone ElevenLabs app window. Use the <strong>desktop/</strong> Electron app or <strong>Android APK</strong> if you want it docked inside the right-hand panel.";
-        } else {
-          fallbackLink.style.display = "inline-flex";
-          statusNote.innerHTML = "Your browser blocked the app window popup. Click <strong>Allow / Open ElevenLabs Directly</strong> above to launch ElevenLabs.";
-        }
+        nordNotice.innerHTML = "A web browser cannot disconnect your system NordVPN tunnel. Disconnect directly inside the official NordVPN app.";
       });
     })();
   </script>
