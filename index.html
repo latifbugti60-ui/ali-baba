@@ -311,12 +311,14 @@
             <h2>Temp Mail</h2>
             <a class="toolbar-btn" href="https://mail.tm/" target="_blank" rel="noopener noreferrer">Open Mail.tm</a>
           </div>
-          <div class="email-box" id="tempEmailBox">Tap New Email to generate a disposable address</div>
+          <div style="display:flex; gap:8px; align-items:stretch;">
+            <div class="email-box" id="tempEmailBox" style="flex:1; user-select:all;">Generating temporary email...</div>
+            <button class="outline-btn" id="copyEmailBtn" type="button" style="white-space:nowrap;">Copy</button>
+          </div>
           <div class="row-2">
             <button class="primary-btn" id="genEmailBtn" type="button">New Email</button>
-            <button class="outline-btn" id="copyEmailBtn" type="button">Copy Email</button>
+            <button class="outline-btn" id="refreshInboxBtn" type="button">Refresh Inbox</button>
           </div>
-          <button class="outline-btn" id="refreshInboxBtn" type="button">Refresh Inbox</button>
           <div class="msg-list" id="tempInboxList"></div>
           <div class="notice" id="tempMailNote">
             Powered by the official Mail.tm temporary email API. Do not use for automated bulk signups; some sites may restrict disposable domains.
@@ -425,10 +427,11 @@
         return { address: addr, token: tokJson.token, api: provider.api };
       }
 
-      async function createTempEmail() {
+      async function createTempEmail(quiet) {
         if (isTempBusy) return;
         isTempBusy = true;
         genEmailBtn.disabled = true;
+        emailBox.textContent = "Generating temporary email...";
         tempNote.textContent = "Creating new real temporary inbox...";
         try {
           var created = null;
@@ -447,11 +450,12 @@
           tempApiBase = created.api;
           emailBox.textContent = tempAddress;
           inboxList.replaceChildren();
-          if (navigator.clipboard && navigator.clipboard.writeText) {
+          if (!quiet && navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(tempAddress).catch(function () {});
           }
-          tempNote.textContent = "New real email ready & copied: " + tempAddress;
+          tempNote.textContent = (quiet ? "Ready: " : "New real email ready & copied: ") + tempAddress;
         } catch (err) {
+          emailBox.textContent = tempAddress || "Tap New Email to retry";
           tempNote.textContent = (err && err.message) ? err.message : "Unable to create temp email.";
         } finally {
           isTempBusy = false;
@@ -460,7 +464,7 @@
       }
 
       async function refreshTempInbox() {
-        if (!tempToken) return createTempEmail();
+        if (!tempToken) return createTempEmail(false);
         tempNote.textContent = "Checking inbox...";
         try {
           var res = await fetch(tempApiBase + "/messages", {
@@ -502,7 +506,7 @@
         }
       }
 
-      genEmailBtn.addEventListener("click", createTempEmail);
+      genEmailBtn.addEventListener("click", function () { createTempEmail(false); });
       document.getElementById("refreshInboxBtn").addEventListener("click", refreshTempInbox);
       document.getElementById("copyEmailBtn").addEventListener("click", function () {
         if (tempAddress && navigator.clipboard && navigator.clipboard.writeText) {
@@ -510,6 +514,8 @@
           tempNote.textContent = "Copied: " + tempAddress;
         }
       });
+
+      createTempEmail(true);
     })();
   </script>
 </body>

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AlternateEmail
 import androidx.compose.material.icons.filled.ContentCopy
@@ -35,6 +36,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -88,7 +90,7 @@ fun TempMailPanel(
     var selectedMessageBody by remember { mutableStateOf<String?>(null) }
     var isBodyLoading by remember { mutableStateOf(false) }
 
-    val generateNewAddress: () -> Unit = {
+    val generateNewAddress: (Boolean) -> Unit = { quiet ->
         if (!isLoading) {
             isLoading = true
             scope.launch {
@@ -96,21 +98,31 @@ fun TempMailPanel(
                     .onSuccess { created ->
                         mailbox = created
                         messages = emptyList()
-                        clipboardManager.setText(AnnotatedString(created.address))
-                        onShowNotice("Created & copied: ${created.address}")
+                        if (!quiet) {
+                            clipboardManager.setText(AnnotatedString(created.address))
+                            onShowNotice("New email ready & copied: ${created.address}")
+                        }
                     }
                     .onFailure { err ->
-                        onShowNotice(err.message ?: "Unable to create temporary email.")
+                        if (!quiet) {
+                            onShowNotice(err.message ?: "Unable to create temporary email.")
+                        }
                     }
                 isLoading = false
             }
         }
     }
 
+    LaunchedEffect(Unit) {
+        if (mailbox == null) {
+            generateNewAddress(true)
+        }
+    }
+
     val refreshInbox: () -> Unit = {
         val current = mailbox
         if (current == null) {
-            generateNewAddress()
+            generateNewAddress(false)
         } else if (!isLoading) {
             isLoading = true
             scope.launch {
@@ -195,63 +207,72 @@ fun TempMailPanel(
                 }
             }
 
-            // Address Display Box (Ninja TempMail style)
-            Surface(
-                shape = RoundedCornerShape(14.dp),
-                color = ObsidianDeep.copy(alpha = 0.85f),
-                border = BorderStroke(
-                    1.dp,
-                    if (mailbox != null) MintEmerald.copy(alpha = 0.55f) else GlassBorder.copy(alpha = 0.35f),
-                ),
+            // Address Display Box with adjacent Copy button (Ninja TempMail style)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                Surface(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(14.dp),
+                    color = ObsidianDeep.copy(alpha = 0.85f),
+                    border = BorderStroke(
+                        1.dp,
+                        if (mailbox != null) MintEmerald.copy(alpha = 0.55f) else GlassBorder.copy(alpha = 0.35f),
+                    ),
                 ) {
-                    Text(
-                        text = mailbox?.address ?: "Tap \"New Email\" to generate address",
-                        fontFamily = JetBrainsMonoFontFamily,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (mailbox != null) MintEmerald else TextSecondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
-                    if (mailbox != null) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Surface(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable {
-                                    clipboardManager.setText(AnnotatedString(mailbox!!.address))
-                                    onShowNotice("Copied ${mailbox!!.address}")
-                                }
-                                .testTag("tempmail_copy_button"),
-                            shape = RoundedCornerShape(10.dp),
-                            color = NeonSkyBlue.copy(alpha = 0.16f),
-                            border = BorderStroke(1.dp, NeonSkyBlue.copy(alpha = 0.45f)),
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ContentCopy,
-                                    contentDescription = stringResource(R.string.tempmail_copy),
-                                    tint = NeonSkyBlue,
-                                    modifier = Modifier.size(14.dp),
-                                )
-                                Text(
-                                    text = stringResource(R.string.tempmail_copy),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = NeonSkyBlue,
-                                )
+                    SelectionContainer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 13.dp),
+                    ) {
+                        Text(
+                            text = mailbox?.address
+                                ?: if (isLoading) "Generating temporary email..." else "Tap New Email to retry",
+                            fontFamily = JetBrainsMonoFontFamily,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (mailbox != null) MintEmerald else TextSecondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .clickable(enabled = mailbox != null) {
+                            mailbox?.let {
+                                clipboardManager.setText(AnnotatedString(it.address))
+                                onShowNotice("Copied ${it.address}")
                             }
                         }
+                        .testTag("tempmail_copy_button"),
+                    shape = RoundedCornerShape(14.dp),
+                    color = if (mailbox != null) NeonSkyBlue.copy(alpha = 0.18f) else ObsidianDeep.copy(alpha = 0.6f),
+                    border = BorderStroke(
+                        1.dp,
+                        if (mailbox != null) NeonSkyBlue.copy(alpha = 0.55f) else GlassBorder.copy(alpha = 0.3f),
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = stringResource(R.string.tempmail_copy),
+                            tint = if (mailbox != null) NeonSkyBlue else TextSecondary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(
+                            text = stringResource(R.string.tempmail_copy),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (mailbox != null) NeonSkyBlue else TextSecondary,
+                        )
                     }
                 }
             }
@@ -268,7 +289,7 @@ fun TempMailPanel(
                         .background(BluePurpleHorizontalGradient),
                 ) {
                     Button(
-                        onClick = generateNewAddress,
+                        onClick = { generateNewAddress(false) },
                         enabled = !isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
