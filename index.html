@@ -140,24 +140,6 @@
       color: var(--text-secondary);
       line-height: 1.5;
     }
-
-    .browser-overlay {
-      position: fixed; inset: 0; z-index: 10; background: var(--bg-deep);
-      display: none; flex-direction: column;
-    }
-    .browser-overlay.active { display: flex; }
-    .browser-topbar {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding: 12px 16px; background: rgba(13, 20, 40, 0.94); border-bottom: 1px solid var(--border);
-    }
-    .browser-body { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .browser-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: none; background: #fff; }
-    .fallback-card {
-      position: relative; z-index: 2; max-width: 480px; width: 100%;
-      background: rgba(13, 20, 40, 0.94); border: 1px solid var(--border);
-      border-radius: 20px; padding: 26px; text-align: center; display: none; flex-direction: column; gap: 14px;
-    }
-    .fallback-card.visible { display: flex; }
   </style>
 </head>
 <body>
@@ -199,29 +181,16 @@
 
       <section class="card">
         <h2>2. ElevenLabs</h2>
-        <p>Open the official ElevenLabs website to select available voice characters, enter text, generate audio, play back, and download.</p>
-        <button class="primary-btn" id="openElevenLabsBtn" type="button" style="margin-top:auto;">
+        <p>Open the official ElevenLabs website directly in a new tab to select available voice characters, enter text, generate audio, play back, and download.</p>
+        <a class="primary-btn" id="openElevenLabsBtn" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer" style="margin-top:auto;">
           OPEN ELEVENLABS
-        </button>
+        </a>
+        <div class="notice">
+          ElevenLabs security headers block embedded iframes (&ldquo;refused to connect&rdquo;). Clicking <strong>OPEN ELEVENLABS</strong> opens the official <code>https://elevenlabs.io</code> website directly in a new browser tab under your own ElevenLabs account.
+        </div>
       </section>
     </div>
   </main>
-
-  <section class="browser-overlay" id="browserOverlay" aria-label="ElevenLabs Browser">
-    <header class="browser-topbar">
-      <button class="secondary-btn" id="closeBrowserBtn" type="button" style="cursor:pointer;">Home</button>
-      <span style="font-family:monospace; color:var(--sky); font-size:0.86rem;">https://elevenlabs.io</span>
-      <a class="secondary-btn" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer">Open in New Tab</a>
-    </header>
-    <div class="browser-body">
-      <iframe id="elevenLabsFrame" class="browser-frame" title="ElevenLabs Official Website"></iframe>
-      <div class="fallback-card" id="fallbackCard">
-        <h2>Embedded Browser Blocked by ElevenLabs</h2>
-        <p>ElevenLabs security headers block frame embedding. Open the official ElevenLabs website in a new tab to sign in, pick voices, generate speech, and download.</p>
-        <a class="primary-btn" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer">OPEN ELEVENLABS IN NEW TAB</a>
-      </div>
-    </div>
-  </section>
 
   <script>
     (function () {
@@ -245,41 +214,6 @@
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(selectedServer).catch(function () {});
         }
-      });
-
-      var openBtn = document.getElementById("openElevenLabsBtn");
-      var closeBtn = document.getElementById("closeBrowserBtn");
-      var overlay = document.getElementById("browserOverlay");
-      var frame = document.getElementById("elevenLabsFrame");
-      var fallback = document.getElementById("fallbackCard");
-      var fallbackTimer = null;
-
-      openBtn.addEventListener("click", function () {
-        overlay.classList.add("active");
-        fallback.classList.remove("visible");
-        frame.style.display = "block";
-        frame.src = "https://elevenlabs.io/";
-        clearTimeout(fallbackTimer);
-        fallbackTimer = setTimeout(function () {
-          try {
-            var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
-            if (!doc || !doc.body || doc.body.innerHTML === "") {
-              frame.style.display = "none";
-              fallback.classList.add("visible");
-            }
-          } catch (e) {}
-        }, 2500);
-      });
-
-      frame.addEventListener("error", function () {
-        frame.style.display = "none";
-        fallback.classList.add("visible");
-      });
-
-      closeBtn.addEventListener("click", function () {
-        clearTimeout(fallbackTimer);
-        frame.src = "about:blank";
-        overlay.classList.remove("active");
       });
     })();
   </script>

@@ -1136,6 +1136,7 @@ private fun ElevenLabsBrowserScreen(
                                     error: WebResourceError?,
                                 ) {
                                     if (request?.isForMainFrame == true) {
+                                        view?.loadUrl("about:blank")
                                         embeddingBlocked = true
                                     }
                                 }
@@ -1146,7 +1147,8 @@ private fun ElevenLabsBrowserScreen(
                                     errorResponse: WebResourceResponse?,
                                 ) {
                                     val code = errorResponse?.statusCode ?: return
-                                    if (request?.isForMainFrame == true && (code == 403 || code >= 500)) {
+                                    if (request?.isForMainFrame == true && (code == 403 || code == 429 || code >= 500)) {
+                                        view?.loadUrl("about:blank")
                                         embeddingBlocked = true
                                     }
                                 }
