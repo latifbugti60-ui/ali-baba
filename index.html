@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LATIF VPN CONTROL</title>
-  <meta name="description" content="LATIF VPN CONTROL — Dark split dashboard with NordVPN control panel and embedded ElevenLabs browser workspace." />
+  <meta name="description" content="LATIF VPN CONTROL — Dark split dashboard with NordVPN control and ElevenLabs studio access." />
   <style>
     :root {
       --bg-deep: #060914;
@@ -130,6 +130,9 @@
 
     .primary-btn {
       width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       padding: 14px 18px;
       border-radius: 14px;
       border: 1.5px solid rgba(56, 189, 248, 0.55);
@@ -139,6 +142,7 @@
       font-size: 0.92rem;
       letter-spacing: 0.05em;
       cursor: pointer;
+      text-decoration: none;
       transition: transform 0.16s ease, box-shadow 0.22s ease;
     }
     .primary-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(59, 130, 246, 0.32); }
@@ -197,7 +201,7 @@
       padding: 24px;
     }
     .panel-inner {
-      max-width: 480px;
+      max-width: 500px;
       width: 100%;
       text-align: center;
       display: flex;
@@ -217,11 +221,11 @@
     <header class="header" id="dashboardHeader">
       <div>
         <h1>LATIF VPN CONTROL</h1>
-        <p>Official NordVPN control &amp; embedded ElevenLabs workspace</p>
+        <p>Official NordVPN control &amp; ElevenLabs studio workspace</p>
       </div>
       <div class="status-pill" id="vpnStatusPill">
         <span class="status-dot"></span>
-        <span>Disconnected</span>
+        <span>Browser View (Use Desktop / Android App for Live VPN)</span>
       </div>
     </header>
 
@@ -233,7 +237,7 @@
         <button class="server-btn active" type="button" data-server="Ireland">
           <div>
             <strong>Ireland</strong>
-            <span>Dublin • EU West • Tap to Connect</span>
+            <span>Dublin • EU West • Tap to Select</span>
           </div>
           <span>IE</span>
         </button>
@@ -241,7 +245,7 @@
         <button class="server-btn" type="button" data-server="Sweden">
           <div>
             <strong>Sweden</strong>
-            <span>Stockholm • EU North • Tap to Connect</span>
+            <span>Stockholm • EU North • Tap to Select</span>
           </div>
           <span>SE</span>
         </button>
@@ -249,7 +253,7 @@
         <button class="secondary-btn" id="disconnectBtn" type="button">Disconnect VPN</button>
 
         <div class="notice" id="nordNotice">
-          Web browsers cannot read system VPN state or connect/disconnect the native NordVPN app directly. Use the <strong>Latif VPN Control</strong> Android app (native Android <code>WebView</code> + NordVPN app integration) to connect Ireland/Sweden and view live Connected / Disconnected status inside the app without opening browser tabs.
+          Standard web pages cannot directly control native NordVPN tunnels. Clicking <strong>NORDVPN ACCOUNT</strong> opens your official NordVPN account window; use the included <strong>Android APK</strong> or <strong>desktop/ Electron app</strong> for native NordVPN app launching and live VPN status.
         </div>
       </section>
 
@@ -260,11 +264,14 @@
         </div>
         <div class="panel-body">
           <div class="panel-inner" id="elevenLabsPanel">
-            <h2>Embedded ElevenLabs Browser</h2>
-            <p>Access the official ElevenLabs website inside the app to choose voices, enter text, generate speech, play back, and download.</p>
+            <h2>ElevenLabs Studio</h2>
+            <p>Open the official ElevenLabs website to select available voices, enter text, generate speech, play back, and download under your own ElevenLabs account.</p>
             <button class="primary-btn" id="openElevenLabsBtn" type="button">OPEN ELEVENLABS</button>
-            <div class="notice" id="elevenLabsNotice" style="display:none;">
-              Standard web browsers block embedding <code>https://elevenlabs.io</code> inside an <code>&lt;iframe&gt;</code> (<code>X-Frame-Options</code> / <code>CSP</code>), and external tabs are disabled per app policy. Run the native Android <strong>Latif VPN Control</strong> app (or a desktop Electron/Tauri WebView shell) to render ElevenLabs directly inside this panel.
+            <a class="toolbar-btn" id="directFallbackLink" href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer" style="display:none; text-decoration:none;">
+              Allow / Open ElevenLabs Directly
+            </a>
+            <div class="notice" id="elevenLabsStatus">
+              On GitHub Pages (web browser), clicking <strong>OPEN ELEVENLABS</strong> launches ElevenLabs in a standalone app window because browsers block <code>&lt;iframe&gt;</code> embedding (<code>X-Frame-Options</code>). For 100% inside-window embedding with zero external windows, run the included <strong>desktop/</strong> Electron WebView app or the <strong>Android APK</strong>.
             </div>
           </div>
         </div>
@@ -296,22 +303,43 @@
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(country).catch(function () {});
           }
-          nordNotice.innerHTML = "Selected <strong>" + country + "</strong> (copied). Open the native Android <strong>Latif VPN Control</strong> app to launch the official NordVPN app and track live Connected / Disconnected status.";
+          nordNotice.innerHTML = "Selected <strong>" + country + "</strong> (copied to clipboard). Open the NordVPN app on your device and paste or pick <strong>" + country + "</strong>.";
         });
       });
 
+      function openAppWindow(url, name) {
+        var win = window.open(
+          url,
+          name,
+          "popup=yes,width=1180,height=800,menubar=no,toolbar=no,location=yes,status=no"
+        );
+        return win;
+      }
+
       document.getElementById("nordAccountBtn").addEventListener("click", function () {
         document.getElementById("panelHost").textContent = "https://my.nordaccount.com/";
-        document.getElementById("elevenLabsNotice").style.display = "block";
+        var win = openAppWindow("https://my.nordaccount.com/", "latif_nord_account");
+        if (!win) {
+          nordNotice.innerHTML = "Popup blocked by browser. Allow popups for this site or open <strong>https://my.nordaccount.com/</strong> directly.";
+        }
       });
 
       document.getElementById("disconnectBtn").addEventListener("click", function () {
-        nordNotice.innerHTML = "A standard web browser cannot terminate native NordVPN tunnels. Use Disconnect inside the Android <strong>Latif VPN Control</strong> app or the official NordVPN application.";
+        nordNotice.innerHTML = "A web browser cannot disconnect your system NordVPN tunnel. Disconnect directly inside the official NordVPN app or use the Android app.";
       });
 
+      var fallbackLink = document.getElementById("directFallbackLink");
+      var statusNote = document.getElementById("elevenLabsStatus");
       document.getElementById("openElevenLabsBtn").addEventListener("click", function () {
         document.getElementById("panelHost").textContent = "https://elevenlabs.io/";
-        document.getElementById("elevenLabsNotice").style.display = "block";
+        var win = openAppWindow("https://elevenlabs.io/", "latif_elevenlabs_studio");
+        if (win) {
+          fallbackLink.style.display = "none";
+          statusNote.innerHTML = "Opened <strong>https://elevenlabs.io/</strong> in a standalone ElevenLabs app window. Use the <strong>desktop/</strong> Electron app or <strong>Android APK</strong> if you want it docked inside the right-hand panel.";
+        } else {
+          fallbackLink.style.display = "inline-flex";
+          statusNote.innerHTML = "Your browser blocked the app window popup. Click <strong>Allow / Open ElevenLabs Directly</strong> above to launch ElevenLabs.";
+        }
       });
     })();
   </script>

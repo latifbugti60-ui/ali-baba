@@ -1,0 +1,12 @@
+{
+  "name": "latif-vpn-control-desktop",
+  "version": "1.0.0",
+  "description": "LATIF VPN CONTROL desktop Electron app with docked NordVPN control panel and native embedded ElevenLabs WebContentsView.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^34.0.0"
+  }
+}
