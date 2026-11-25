@@ -74,7 +74,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TempMailPanel(
-    onOpenTempMailWeb: () -> Unit,
+    onOpenTempMailWeb: (String) -> Unit,
     onShowNotice: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -114,7 +114,7 @@ fun TempMailPanel(
         } else if (!isLoading) {
             isLoading = true
             scope.launch {
-                TempMailRepository.fetchMessages(current.token)
+                TempMailRepository.fetchMessages(current)
                     .onSuccess { list ->
                         messages = list
                         onShowNotice(
@@ -179,7 +179,7 @@ fun TempMailPanel(
                 }
 
                 OutlinedButton(
-                    onClick = onOpenTempMailWeb,
+                    onClick = { onOpenTempMailWeb(mailbox?.webUrl ?: "https://mail.tm/") },
                     modifier = Modifier
                         .height(36.dp)
                         .testTag("tempmail_open_web_button"),
@@ -358,10 +358,10 @@ fun TempMailPanel(
                                         .clickable {
                                             selectedMessage = msg
                                             selectedMessageBody = null
-                                            val token = mailbox?.token ?: return@clickable
+                                            val currentBox = mailbox ?: return@clickable
                                             isBodyLoading = true
                                             scope.launch {
-                                                TempMailRepository.fetchMessageBody(token, msg.id)
+                                                TempMailRepository.fetchMessageBody(currentBox, msg.id)
                                                     .onSuccess { body -> selectedMessageBody = body }
                                                     .onFailure { err ->
                                                         selectedMessageBody = err.message ?: "Unable to load message."

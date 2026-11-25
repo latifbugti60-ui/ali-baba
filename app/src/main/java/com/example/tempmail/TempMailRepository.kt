@@ -14,6 +14,8 @@ import javax.net.ssl.HttpsURLConnection
 data class TempMailbox(
     val address: String,
     val token: String,
+    val baseUrl: String,
+    val webUrl: String,
 )
 
 data class TempMailMessage(
@@ -27,49 +29,70 @@ data class TempMailMessage(
 )
 
 object TempMailRepository {
-    private const val BASE_URL = "https://api.mail.tm"
+    private val providers = listOf(
+        "https://api.mail.tm" to "https://mail.tm/",
+        "https://api.mail.gw" to "https://mail.gw/",
+    )
+
     private val secureRandom = SecureRandom()
     private val aliasChars = "abcdefghijklmnopqrstuvwxyz0123456789"
     private val passChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$"
 
     suspend fun createMailbox(): Result<TempMailbox> = withContext(Dispatchers.IO) {
-        runCatching {
-            val domainsJson = JSONObject(httpGet("$BASE_URL/domains", token = null))
-            val members = domainsJson.optJSONArray("hydra:member") ?: JSONArray()
-            var activeDomain: String? = null
+        var lastError: Throwable? = null
+        for ((apiBase, webUrl) in providers) {
+            val attempt = runCatching { createOnProvider(apiBase, webUrl) }
+            if (attempt.isSuccess) {
+                return@withContext attempt
+            }
+            lastError = attempt.exceptionOrNull()
+        }
+        Result.failure(lastError ?: IllegalStateException("Temporary email providers are currently busy. Try again in a few seconds."))
+    }
+
+    private fun createOnProvider(apiBase: String, webUrl: String): TempMailbox {
+        val domainsJson = JSONObject(httpGet("$apiBase/domains", token = null))
+        val members = domainsJson.optJSONArray("hydra:member") ?: JSONArray()
+        val activeDomains = buildList {
             for (i in 0 until members.length()) {
                 val obj = members.optJSONObject(i) ?: continue
                 if (obj.optBoolean("isActive", true)) {
-                    activeDomain = obj.optString("domain").takeIf { it.isNotBlank() }
-                    if (activeDomain != null) break
+                    val domain = obj.optString("domain")
+                    if (domain.isNotBlank()) add(domain)
                 }
             }
-            val domain = activeDomain ?: error("No active temporary email domain available right now.")
-            val alias = "latif" + randomString(aliasChars, 7)
-            val address = "$alias@$domain"
-            val ephemeralPassword = randomString(passChars, 18)
-
-            val accountPayload = JSONObject().apply {
-                put("address", address)
-                put("password", ephemeralPassword)
-            }
-            httpPost("$BASE_URL/accounts", accountPayload.toString())
-
-            val tokenPayload = JSONObject().apply {
-                put("address", address)
-                put("password", ephemeralPassword)
-            }
-            val tokenResponse = JSONObject(httpPost("$BASE_URL/token", tokenPayload.toString()))
-            val token = tokenResponse.optString("token")
-            require(token.isNotBlank()) { "Failed to obtain temporary inbox token." }
-
-            TempMailbox(address = address, token = token)
         }
+        require(activeDomains.isNotEmpty()) { "No active temporary email domain available right now." }
+        val domain = activeDomains[secureRandom.nextInt(activeDomains.size)]
+        val alias = "user" + randomString(aliasChars, 8)
+        val address = "$alias@$domain"
+        val ephemeralPassword = randomString(passChars, 18)
+
+        val accountPayload = JSONObject().apply {
+            put("address", address)
+            put("password", ephemeralPassword)
+        }
+        httpPost("$apiBase/accounts", accountPayload.toString())
+
+        val tokenPayload = JSONObject().apply {
+            put("address", address)
+            put("password", ephemeralPassword)
+        }
+        val tokenResponse = JSONObject(httpPost("$apiBase/token", tokenPayload.toString()))
+        val token = tokenResponse.optString("token")
+        require(token.isNotBlank()) { "Failed to obtain temporary inbox token." }
+
+        return TempMailbox(
+            address = address,
+            token = token,
+            baseUrl = apiBase,
+            webUrl = webUrl,
+        )
     }
 
-    suspend fun fetchMessages(token: String): Result<List<TempMailMessage>> = withContext(Dispatchers.IO) {
+    suspend fun fetchMessages(mailbox: TempMailbox): Result<List<TempMailMessage>> = withContext(Dispatchers.IO) {
         runCatching {
-            val json = JSONObject(httpGet("$BASE_URL/messages", token = token))
+            val json = JSONObject(httpGet("${mailbox.baseUrl}/messages", token = mailbox.token))
             val members = json.optJSONArray("hydra:member") ?: JSONArray()
             buildList {
                 for (i in 0 until members.length()) {
@@ -90,11 +113,11 @@ object TempMailRepository {
         }
     }
 
-    suspend fun fetchMessageBody(token: String, messageId: String): Result<String> = withContext(Dispatchers.IO) {
+    suspend fun fetchMessageBody(mailbox: TempMailbox, messageId: String): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
             val safeId = messageId.replace(Regex("[^A-Za-z0-9_-]"), "")
             require(safeId.isNotBlank()) { "Invalid message id." }
-            val json = JSONObject(httpGet("$BASE_URL/messages/$safeId", token = token))
+            val json = JSONObject(httpGet("${mailbox.baseUrl}/messages/$safeId", token = mailbox.token))
             val plain = json.optString("text")
             if (plain.isNotBlank()) {
                 plain

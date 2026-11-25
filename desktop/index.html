@@ -248,12 +248,20 @@
       }
     });
 
-    // Temp Mail (Mail.tm REST API, plain-text rendering via textContent only)
+    // Temp Mail (Official Mail.tm + Mail.gw fallback, plain-text rendering via textContent only)
+    const TEMP_PROVIDERS = [
+      { api: "https://api.mail.tm", web: "https://mail.tm/" },
+      { api: "https://api.mail.gw", web: "https://mail.gw/" }
+    ];
     let tempAddress = "";
     let tempToken = "";
+    let tempApiBase = "https://api.mail.tm";
+    let tempWebUrl = "https://mail.tm/";
+    let isTempBusy = false;
     const emailBox = document.getElementById("tempEmailBox");
     const inboxList = document.getElementById("tempInboxList");
     const tempNote = document.getElementById("tempMailNote");
+    const genEmailBtn = document.getElementById("genEmailBtn");
 
     function randomStr(chars, len) {
       const arr = new Uint32Array(len);
@@ -261,34 +269,66 @@
       return Array.from(arr, (n) => chars[n % chars.length]).join("");
     }
 
+    async function createOnProvider(provider) {
+      const dRes = await fetch(provider.api + "/domains");
+      if (!dRes.ok) throw new Error("Domain lookup failed (" + dRes.status + ")");
+      const dJson = await dRes.json();
+      const activeDomains = (dJson["hydra:member"] || []).filter((d) => d.isActive !== false && d.domain);
+      if (activeDomains.length === 0) throw new Error("No active domain available.");
+      const idxArr = new Uint32Array(1);
+      crypto.getRandomValues(idxArr);
+      const picked = activeDomains[idxArr[0] % activeDomains.length];
+      const addr = "user" + randomStr("abcdefghijklmnopqrstuvwxyz0123456789", 8) + "@" + picked.domain;
+      const pass = randomStr("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$", 18);
+      const accRes = await fetch(provider.api + "/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: addr, password: pass })
+      });
+      if (!accRes.ok) throw new Error("Account creation failed (" + accRes.status + ")");
+      const tokRes = await fetch(provider.api + "/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: addr, password: pass })
+      });
+      if (!tokRes.ok) throw new Error("Token creation failed (" + tokRes.status + ")");
+      const tokJson = await tokRes.json();
+      if (!tokJson.token) throw new Error("Missing auth token.");
+      return { address: addr, token: tokJson.token, api: provider.api, web: provider.web };
+    }
+
     async function createTempEmail() {
-      tempNote.textContent = "Creating temporary inbox...";
+      if (isTempBusy) return;
+      isTempBusy = true;
+      genEmailBtn.disabled = true;
+      tempNote.textContent = "Creating new real temporary inbox...";
       try {
-        const dRes = await fetch("https://api.mail.tm/domains");
-        const dJson = await dRes.json();
-        const domainObj = (dJson["hydra:member"] || []).find((d) => d.isActive !== false);
-        if (!domainObj) throw new Error("No active domain available.");
-        const addr = "latif" + randomStr("abcdefghijklmnopqrstuvwxyz0123456789", 7) + "@" + domainObj.domain;
-        const pass = randomStr("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$", 18);
-        const accRes = await fetch("https://api.mail.tm/accounts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ address: addr, password: pass })
-        });
-        if (!accRes.ok) throw new Error("Account creation failed (" + accRes.status + ")");
-        const tokRes = await fetch("https://api.mail.tm/token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ address: addr, password: pass })
-        });
-        const tokJson = await tokRes.json();
-        tempAddress = addr;
-        tempToken = tokJson.token || "";
+        let created = null;
+        let lastErr = null;
+        for (const p of TEMP_PROVIDERS) {
+          try {
+            created = await createOnProvider(p);
+            break;
+          } catch (e) {
+            lastErr = e;
+          }
+        }
+        if (!created) throw lastErr || new Error("Temporary email providers are busy.");
+        tempAddress = created.address;
+        tempToken = created.token;
+        tempApiBase = created.api;
+        tempWebUrl = created.web;
         emailBox.textContent = tempAddress;
         inboxList.replaceChildren();
-        tempNote.textContent = "Ready: " + tempAddress;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(tempAddress).catch(() => {});
+        }
+        tempNote.textContent = "New real email ready & copied: " + tempAddress;
       } catch (err) {
         tempNote.textContent = err.message || "Unable to create temp email.";
+      } finally {
+        isTempBusy = false;
+        genEmailBtn.disabled = false;
       }
     }
 
@@ -296,7 +336,7 @@
       if (!tempToken) return createTempEmail();
       tempNote.textContent = "Checking inbox...";
       try {
-        const res = await fetch("https://api.mail.tm/messages", {
+        const res = await fetch(tempApiBase + "/messages", {
           headers: { Authorization: "Bearer " + tempToken }
         });
         const json = await res.json();
@@ -322,7 +362,7 @@
           item.addEventListener("click", async () => {
             const safeId = String(m.id || "").replace(/[^A-Za-z0-9_-]/g, "");
             if (!safeId) return;
-            const detailRes = await fetch("https://api.mail.tm/messages/" + safeId, {
+            const detailRes = await fetch(tempApiBase + "/messages/" + safeId, {
               headers: { Authorization: "Bearer " + tempToken }
             });
             const detail = await detailRes.json();
@@ -335,7 +375,8 @@
       }
     }
 
-    document.getElementById("genEmailBtn").addEventListener("click", createTempEmail);
+    document.getElementById("tempMailWebBtn").addEventListener("click", () => openInsidePanel(tempWebUrl));
+    genEmailBtn.addEventListener("click", createTempEmail);
     document.getElementById("refreshInboxBtn").addEventListener("click", refreshTempInbox);
     document.getElementById("copyEmailBtn").addEventListener("click", () => {
       if (tempAddress && navigator.clipboard) {

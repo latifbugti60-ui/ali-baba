@@ -181,6 +181,7 @@ object OfficialAccessPolicy {
         "nordaccount.com",
         "nordvpn.com",
         "mail.tm",
+        "mail.gw",
         "tempmail.ninja",
         "accounts.google.com",
         "appleid.apple.com",
@@ -195,6 +196,7 @@ object OfficialAccessPolicy {
         ".nordaccount.com",
         ".nordvpn.com",
         ".mail.tm",
+        ".mail.gw",
         ".tempmail.ninja",
         ".stripe.com",
         ".cloudflare.com",
@@ -476,10 +478,10 @@ fun LatifVpnControlApp() {
                                     modifier = Modifier.fillMaxWidth(),
                                 )
                                 TempMailPanel(
-                                    onOpenTempMailWeb = {
+                                    onOpenTempMailWeb = { webUrl ->
                                         openInEmbeddedPanel(
                                             EmbeddedBrowserMode.TEMP_MAIL_WEB,
-                                            OfficialAccessPolicy.TEMP_MAIL_WEB_URL,
+                                            webUrl,
                                         )
                                     },
                                     onShowNotice = showInAppNotice,
@@ -515,10 +517,10 @@ fun LatifVpnControlApp() {
                                 modifier = Modifier.fillMaxWidth(),
                             )
                             TempMailPanel(
-                                onOpenTempMailWeb = {
+                                onOpenTempMailWeb = { webUrl ->
                                     openInEmbeddedPanel(
                                         EmbeddedBrowserMode.TEMP_MAIL_WEB,
-                                        OfficialAccessPolicy.TEMP_MAIL_WEB_URL,
+                                        webUrl,
                                     )
                                 },
                                 onShowNotice = showInAppNotice,
