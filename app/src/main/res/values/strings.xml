@@ -29,4 +29,13 @@
     <string name="cd_webview_back">Navigate back inside embedded browser</string>
     <string name="cd_webview_reload">Reload embedded browser</string>
     <string name="cd_fullscreen_toggle">Toggle full-screen embedded browser</string>
+
+    <string name="tempmail_title">Temp Mail</string>
+    <string name="tempmail_subtitle">Disposable inbox (Mail.tm API)</string>
+    <string name="tempmail_generate">New Email</string>
+    <string name="tempmail_copy">Copy</string>
+    <string name="tempmail_refresh">Refresh Inbox</string>
+    <string name="tempmail_open_web">Open Web</string>
+    <string name="tempmail_empty">No messages yet. Tap Refresh Inbox after sending an email.</string>
+    <string name="tempmail_policy_note">Uses the official Mail.tm temporary email service. Do not use for automated bulk signups; some platforms may restrict disposable domains.</string>
 </resources>

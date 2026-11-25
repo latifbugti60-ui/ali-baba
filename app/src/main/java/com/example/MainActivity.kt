@@ -148,6 +148,7 @@ import com.example.ui.theme.SoftLavender
 import com.example.ui.theme.SubtleCardBorderGradient
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
+import com.example.ui.components.TempMailPanel
 import com.example.ui.theme.VibrantPurple
 import com.example.ui.theme.WarmAmber
 import kotlinx.coroutines.launch
@@ -165,18 +166,22 @@ enum class EmbeddedBrowserMode {
     IDLE,
     ELEVENLABS,
     NORD_ACCOUNT,
+    TEMP_MAIL_WEB,
 }
 
 object OfficialAccessPolicy {
     const val ELEVENLABS_URL = "https://elevenlabs.io/"
     const val NORDVPN_PACKAGE = "com.nordvpn.android"
     const val NORDVPN_ACCOUNT_URL = "https://my.nordaccount.com/"
+    const val TEMP_MAIL_WEB_URL = "https://mail.tm/"
 
     private val allowedEmbeddedHosts = setOf(
         "elevenlabs.io",
         "my.nordaccount.com",
         "nordaccount.com",
         "nordvpn.com",
+        "mail.tm",
+        "tempmail.ninja",
         "accounts.google.com",
         "appleid.apple.com",
         "github.com",
@@ -189,6 +194,8 @@ object OfficialAccessPolicy {
         ".elevenlabs.io",
         ".nordaccount.com",
         ".nordvpn.com",
+        ".mail.tm",
+        ".tempmail.ninja",
         ".stripe.com",
         ".cloudflare.com",
         ".hcaptcha.com",
@@ -446,24 +453,39 @@ fun LatifVpnControlApp() {
                             modifier = Modifier.fillMaxSize(),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
-                            NordVpnControlPanel(
-                                selectedServer = selectedServer,
-                                nordVpnInstalled = nordVpnInstalled,
-                                systemVpnActive = systemVpnActive,
-                                onSelectAndConnectServer = connectServerThroughNordVpn,
-                                onOpenNordAccount = {
-                                    openInEmbeddedPanel(
-                                        EmbeddedBrowserMode.NORD_ACCOUNT,
-                                        OfficialAccessPolicy.NORDVPN_ACCOUNT_URL,
-                                    )
-                                },
-                                onDisconnect = disconnectNordVpn,
-                                onOpenVpnSettings = openSystemVpnSettings,
+                            Column(
                                 modifier = Modifier
                                     .weight(0.39f)
                                     .fillMaxHeight()
                                     .verticalScroll(rememberScrollState()),
-                            )
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                NordVpnControlPanel(
+                                    selectedServer = selectedServer,
+                                    nordVpnInstalled = nordVpnInstalled,
+                                    systemVpnActive = systemVpnActive,
+                                    onSelectAndConnectServer = connectServerThroughNordVpn,
+                                    onOpenNordAccount = {
+                                        openInEmbeddedPanel(
+                                            EmbeddedBrowserMode.NORD_ACCOUNT,
+                                            OfficialAccessPolicy.NORDVPN_ACCOUNT_URL,
+                                        )
+                                    },
+                                    onDisconnect = disconnectNordVpn,
+                                    onOpenVpnSettings = openSystemVpnSettings,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                                TempMailPanel(
+                                    onOpenTempMailWeb = {
+                                        openInEmbeddedPanel(
+                                            EmbeddedBrowserMode.TEMP_MAIL_WEB,
+                                            OfficialAccessPolicy.TEMP_MAIL_WEB_URL,
+                                        )
+                                    },
+                                    onShowNotice = showInAppNotice,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
                             embeddedPanelContent(
                                 Modifier
                                     .weight(0.61f)
@@ -490,6 +512,16 @@ fun LatifVpnControlApp() {
                                 },
                                 onDisconnect = disconnectNordVpn,
                                 onOpenVpnSettings = openSystemVpnSettings,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            TempMailPanel(
+                                onOpenTempMailWeb = {
+                                    openInEmbeddedPanel(
+                                        EmbeddedBrowserMode.TEMP_MAIL_WEB,
+                                        OfficialAccessPolicy.TEMP_MAIL_WEB_URL,
+                                    )
+                                },
+                                onShowNotice = showInAppNotice,
                                 modifier = Modifier.fillMaxWidth(),
                             )
                             embeddedPanelContent(
@@ -1018,7 +1050,7 @@ private fun ElevenLabsEmbeddedPanel(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
-                                if (browserMode == EmbeddedBrowserMode.NORD_ACCOUNT) {
+                                if (browserMode != EmbeddedBrowserMode.ELEVENLABS) {
                                     OutlinedButton(
                                         onClick = onSwitchToElevenLabs,
                                         modifier = Modifier

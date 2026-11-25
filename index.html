@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LATIF VPN CONTROL</title>
-  <meta name="description" content="LATIF VPN CONTROL — Dark split dashboard with NordVPN control and ElevenLabs studio access." />
+  <meta name="description" content="LATIF VPN CONTROL — Dark split dashboard with NordVPN control, Temp Mail inbox, and ElevenLabs studio access." />
   <style>
     :root {
       --bg-deep: #060914;
@@ -82,16 +82,18 @@
     .dashboard {
       flex: 1;
       display: grid;
-      grid-template-columns: minmax(300px, 380px) 1fr;
+      grid-template-columns: minmax(300px, 390px) 1fr;
       gap: 16px;
       align-items: stretch;
     }
     .dashboard.fullscreen { grid-template-columns: 1fr; }
-    .dashboard.fullscreen .left-panel { display: none; }
+    .dashboard.fullscreen .left-col { display: none; }
 
     @media (max-width: 820px) {
       .dashboard { grid-template-columns: 1fr; }
     }
+
+    .left-col { display: flex; flex-direction: column; gap: 16px; }
 
     .card {
       background: var(--bg-card);
@@ -100,19 +102,19 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       backdrop-filter: blur(16px);
     }
 
-    .card h2 { font-size: 1.2rem; }
-    .card p { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
+    .card h2 { font-size: 1.15rem; }
+    .card p { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; }
 
     .server-btn {
       width: 100%;
       background: rgba(6, 9, 20, 0.72);
       border: 1.5px solid rgba(96, 165, 250, 0.3);
       border-radius: 14px;
-      padding: 13px 14px;
+      padding: 12px 14px;
       color: var(--text-primary);
       cursor: pointer;
       display: flex;
@@ -125,7 +127,7 @@
       background: rgba(59, 130, 246, 0.22);
       border-color: var(--sky);
     }
-    .server-btn strong { display: block; font-size: 0.98rem; }
+    .server-btn strong { display: block; font-size: 0.96rem; }
     .server-btn span { font-size: 0.78rem; color: var(--text-secondary); }
 
     .primary-btn {
@@ -133,14 +135,14 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 14px 18px;
+      padding: 13px 16px;
       border-radius: 14px;
       border: 1.5px solid rgba(56, 189, 248, 0.55);
       background: linear-gradient(90deg, var(--blue), var(--purple));
       color: #fff;
       font-weight: 700;
-      font-size: 0.92rem;
-      letter-spacing: 0.05em;
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
       cursor: pointer;
       text-decoration: none;
       transition: transform 0.16s ease, box-shadow 0.22s ease;
@@ -153,19 +155,64 @@
       border: 1px solid rgba(245, 158, 11, 0.55);
       background: rgba(245, 158, 11, 0.1);
       color: var(--amber);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .outline-btn {
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(59, 130, 246, 0.12);
+      color: var(--sky);
       font-size: 0.86rem;
       font-weight: 700;
       cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .email-box {
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: rgba(6, 9, 20, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      font-family: monospace;
+      font-size: 0.86rem;
+      color: var(--emerald);
+      word-break: break-all;
+    }
+
+    .msg-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 210px;
+      overflow-y: auto;
+    }
+    .msg-item {
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(6, 9, 20, 0.78);
+      border: 1px solid rgba(96, 165, 250, 0.25);
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
     }
 
     .notice {
       background: rgba(245, 158, 11, 0.1);
       border: 1px solid rgba(245, 158, 11, 0.35);
       border-radius: 12px;
-      padding: 12px;
-      font-size: 0.82rem;
+      padding: 11px;
+      font-size: 0.81rem;
       color: var(--text-secondary);
-      line-height: 1.48;
+      line-height: 1.46;
     }
 
     .right-panel {
@@ -192,6 +239,7 @@
       font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
+      text-decoration: none;
     }
     .panel-body {
       flex: 1;
@@ -221,41 +269,60 @@
     <header class="header" id="dashboardHeader">
       <div>
         <h1>LATIF VPN CONTROL</h1>
-        <p>Official NordVPN control &amp; ElevenLabs studio workspace</p>
+        <p>Official NordVPN control, Temp Mail inbox &amp; ElevenLabs studio</p>
       </div>
       <div class="status-pill" id="vpnStatusPill">
         <span class="status-dot"></span>
-        <span>Browser View (Use Desktop / Android App for Live VPN)</span>
+        <span>Browser View (Use Android / Desktop App for Embedded WebView)</span>
       </div>
     </header>
 
     <div class="dashboard" id="dashboardGrid">
-      <section class="card left-panel">
-        <h2>NordVPN Control</h2>
-        <a class="primary-btn" id="nordAccountBtn" href="https://my.nordaccount.com/" target="_blank" rel="noopener noreferrer">NORDVPN ACCOUNT</a>
+      <div class="left-col">
+        <section class="card">
+          <h2>NordVPN Control</h2>
+          <a class="primary-btn" id="nordAccountBtn" href="https://my.nordaccount.com/" target="_blank" rel="noopener noreferrer">NORDVPN ACCOUNT</a>
 
-        <button class="server-btn active" type="button" data-server="Ireland">
-          <div>
-            <strong>Ireland</strong>
-            <span>Dublin • EU West • Tap to Select</span>
+          <button class="server-btn active" type="button" data-server="Ireland">
+            <div>
+              <strong>Ireland</strong>
+              <span>Dublin • EU West • Tap to Select</span>
+            </div>
+            <span>IE</span>
+          </button>
+
+          <button class="server-btn" type="button" data-server="Sweden">
+            <div>
+              <strong>Sweden</strong>
+              <span>Stockholm • EU North • Tap to Select</span>
+            </div>
+            <span>SE</span>
+          </button>
+
+          <button class="secondary-btn" id="disconnectBtn" type="button">Disconnect VPN</button>
+
+          <div class="notice" id="nordNotice">
+            Select <strong>Ireland</strong> or <strong>Sweden</strong> to copy the server name, then connect inside your NordVPN app.
           </div>
-          <span>IE</span>
-        </button>
+        </section>
 
-        <button class="server-btn" type="button" data-server="Sweden">
-          <div>
-            <strong>Sweden</strong>
-            <span>Stockholm • EU North • Tap to Select</span>
+        <section class="card">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <h2>Temp Mail</h2>
+            <a class="toolbar-btn" href="https://mail.tm/" target="_blank" rel="noopener noreferrer">Open Mail.tm</a>
           </div>
-          <span>SE</span>
-        </button>
-
-        <button class="secondary-btn" id="disconnectBtn" type="button">Disconnect VPN</button>
-
-        <div class="notice" id="nordNotice">
-          Select <strong>Ireland</strong> or <strong>Sweden</strong> to copy the server name, then connect inside your NordVPN app.
-        </div>
-      </section>
+          <div class="email-box" id="tempEmailBox">Tap New Email to generate a disposable address</div>
+          <div class="row-2">
+            <button class="primary-btn" id="genEmailBtn" type="button">New Email</button>
+            <button class="outline-btn" id="copyEmailBtn" type="button">Copy Email</button>
+          </div>
+          <button class="outline-btn" id="refreshInboxBtn" type="button">Refresh Inbox</button>
+          <div class="msg-list" id="tempInboxList"></div>
+          <div class="notice" id="tempMailNote">
+            Powered by the official Mail.tm temporary email API. Do not use for automated bulk signups; some sites may restrict disposable domains.
+          </div>
+        </section>
+      </div>
 
       <section class="card right-panel">
         <div class="panel-topbar">
@@ -300,12 +367,113 @@
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(country).catch(function () {});
           }
-          nordNotice.innerHTML = "Selected <strong>" + country + "</strong> (copied to clipboard). Open the NordVPN app on your device and select <strong>" + country + "</strong>.";
+          nordNotice.textContent = "Selected " + country + " (copied to clipboard). Open the NordVPN app on your device and select " + country + ".";
         });
       });
 
       document.getElementById("disconnectBtn").addEventListener("click", function () {
-        nordNotice.innerHTML = "A web browser cannot disconnect your system NordVPN tunnel. Disconnect directly inside the official NordVPN app.";
+        nordNotice.textContent = "A web browser cannot disconnect your system NordVPN tunnel. Disconnect directly inside the official NordVPN app.";
+      });
+
+      // Temp Mail (Mail.tm API with safe plain-text rendering)
+      var tempAddress = "";
+      var tempToken = "";
+      var emailBox = document.getElementById("tempEmailBox");
+      var inboxList = document.getElementById("tempInboxList");
+      var tempNote = document.getElementById("tempMailNote");
+
+      function randomStr(chars, len) {
+        var arr = new Uint32Array(len);
+        crypto.getRandomValues(arr);
+        var out = "";
+        for (var i = 0; i < len; i++) out += chars[arr[i] % chars.length];
+        return out;
+      }
+
+      async function createTempEmail() {
+        tempNote.textContent = "Creating temporary inbox...";
+        try {
+          var dRes = await fetch("https://api.mail.tm/domains");
+          var dJson = await dRes.json();
+          var domainObj = (dJson["hydra:member"] || []).find(function (d) { return d.isActive !== false; });
+          if (!domainObj) throw new Error("No active temporary email domain available.");
+          var addr = "latif" + randomStr("abcdefghijklmnopqrstuvwxyz0123456789", 7) + "@" + domainObj.domain;
+          var pass = randomStr("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$", 18);
+          var accRes = await fetch("https://api.mail.tm/accounts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ address: addr, password: pass })
+          });
+          if (!accRes.ok) throw new Error("Temp inbox creation failed (HTTP " + accRes.status + ")");
+          var tokRes = await fetch("https://api.mail.tm/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ address: addr, password: pass })
+          });
+          var tokJson = await tokRes.json();
+          tempAddress = addr;
+          tempToken = tokJson.token || "";
+          emailBox.textContent = tempAddress;
+          inboxList.replaceChildren();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(tempAddress).catch(function () {});
+          }
+          tempNote.textContent = "Ready & copied: " + tempAddress;
+        } catch (err) {
+          tempNote.textContent = (err && err.message) ? err.message : "Unable to create temp email.";
+        }
+      }
+
+      async function refreshTempInbox() {
+        if (!tempToken) return createTempEmail();
+        tempNote.textContent = "Checking inbox...";
+        try {
+          var res = await fetch("https://api.mail.tm/messages", {
+            headers: { Authorization: "Bearer " + tempToken }
+          });
+          var json = await res.json();
+          var msgs = json["hydra:member"] || [];
+          inboxList.replaceChildren();
+          if (msgs.length === 0) {
+            tempNote.textContent = "No messages yet. Tap Refresh Inbox after sending an email.";
+            return;
+          }
+          tempNote.textContent = msgs.length + " message(s) received. Click a message to read.";
+          msgs.slice(0, 6).forEach(function (m) {
+            var item = document.createElement("div");
+            item.className = "msg-item";
+            var subj = document.createElement("strong");
+            subj.textContent = m.subject || "(No Subject)";
+            var meta = document.createElement("span");
+            meta.style.color = "#38bdf8";
+            meta.textContent = (m.from && m.from.address) ? m.from.address : "";
+            var intro = document.createElement("span");
+            intro.style.color = "#a3b4d4";
+            intro.textContent = m.intro || "";
+            item.append(subj, meta, intro);
+            item.addEventListener("click", async function () {
+              var safeId = String(m.id || "").replace(/[^A-Za-z0-9_-]/g, "");
+              if (!safeId) return;
+              var detailRes = await fetch("https://api.mail.tm/messages/" + safeId, {
+                headers: { Authorization: "Bearer " + tempToken }
+              });
+              var detail = await detailRes.json();
+              tempNote.textContent = (detail.text || m.intro || "").slice(0, 320);
+            });
+            inboxList.appendChild(item);
+          });
+        } catch (err) {
+          tempNote.textContent = (err && err.message) ? err.message : "Unable to refresh inbox.";
+        }
+      }
+
+      document.getElementById("genEmailBtn").addEventListener("click", createTempEmail);
+      document.getElementById("refreshInboxBtn").addEventListener("click", refreshTempInbox);
+      document.getElementById("copyEmailBtn").addEventListener("click", function () {
+        if (tempAddress && navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(tempAddress).catch(function () {});
+          tempNote.textContent = "Copied: " + tempAddress;
+        }
       });
     })();
   </script>

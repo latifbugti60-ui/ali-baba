@@ -44,19 +44,26 @@
       display: flex;
       gap: 16px;
       padding: 12px 16px;
+      min-height: 0;
     }
     .left {
       width: min(390px, 34vw);
-      background: rgba(13, 20, 40, 0.88);
-      border: 1px solid rgba(96, 165, 250, 0.3);
-      border-radius: 18px;
-      padding: 18px;
       display: flex;
       flex-direction: column;
       gap: 12px;
       overflow-y: auto;
+      padding-right: 4px;
     }
     .left.hidden { display: none; }
+    .panel-card {
+      background: rgba(13, 20, 40, 0.88);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
     .right {
       flex: 1;
       background: rgba(13, 20, 40, 0.88);
@@ -87,7 +94,7 @@
       text-align: center;
     }
     .btn {
-      padding: 12px 16px;
+      padding: 11px 14px;
       border-radius: 12px;
       border: 1px solid rgba(56, 189, 248, 0.55);
       background: linear-gradient(90deg, #3b82f6, #8b5cf6);
@@ -96,7 +103,7 @@
       cursor: pointer;
     }
     .country-btn {
-      padding: 12px 14px;
+      padding: 11px 14px;
       border-radius: 12px;
       border: 1px solid rgba(96, 165, 250, 0.35);
       background: rgba(6, 9, 20, 0.72);
@@ -116,7 +123,27 @@
       font-size: 0.8rem;
       font-weight: 600;
     }
-    .note { font-size: 0.82rem; color: #a3b4d4; line-height: 1.45; }
+    .email-box {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(6, 9, 20, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      font-family: monospace;
+      font-size: 0.84rem;
+      color: #10b981;
+      word-break: break-all;
+    }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .msg-list { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
+    .msg-item {
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(6, 9, 20, 0.75);
+      border: 1px solid rgba(96, 165, 250, 0.25);
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .note { font-size: 0.8rem; color: #a3b4d4; line-height: 1.45; }
   </style>
 </head>
 <body>
@@ -127,12 +154,29 @@
 
   <div class="workspace">
     <aside class="left" id="leftPanel">
-      <h3>NordVPN Control</h3>
-      <button class="btn" id="nordAccountBtn">NordVPN Account</button>
-      <button class="country-btn active" data-country="Ireland">Ireland (Dublin)</button>
-      <button class="country-btn" data-country="Sweden">Sweden (Stockholm)</button>
-      <button class="country-btn" id="disconnectBtn" style="border-color:rgba(245,158,11,0.55); color:#f59e0b;">Disconnect</button>
-      <p class="note" id="nordNote">Click Ireland or Sweden to connect via official NordVPN using your NordVPN account.</p>
+      <div class="panel-card">
+        <h3>NordVPN Control</h3>
+        <button class="btn" id="nordAccountBtn">NordVPN Account</button>
+        <button class="country-btn active" data-country="Ireland">Ireland (Dublin)</button>
+        <button class="country-btn" data-country="Sweden">Sweden (Stockholm)</button>
+        <button class="country-btn" id="disconnectBtn" style="border-color:rgba(245,158,11,0.55); color:#f59e0b;">Disconnect</button>
+        <p class="note" id="nordNote">Click Ireland or Sweden to connect via official NordVPN using your NordVPN account.</p>
+      </div>
+
+      <div class="panel-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <h3>Temp Mail (Mail.tm)</h3>
+          <button class="mini-btn" id="tempMailWebBtn">Open Web</button>
+        </div>
+        <div class="email-box" id="tempEmailBox">Click New Email to generate...</div>
+        <div class="row-2">
+          <button class="btn" id="genEmailBtn">New Email</button>
+          <button class="country-btn" id="copyEmailBtn" style="text-align:center;">Copy</button>
+        </div>
+        <button class="mini-btn" id="refreshInboxBtn" style="padding:8px;">Refresh Inbox</button>
+        <div class="msg-list" id="tempInboxList"></div>
+        <p class="note" id="tempMailNote">Uses official Mail.tm service. Respect provider terms; some sites restrict disposable domains.</p>
+      </div>
     </aside>
 
     <section class="right">
@@ -140,8 +184,9 @@
         <div style="display:flex; gap:6px;">
           <button class="mini-btn" id="backBtn">Back</button>
           <button class="mini-btn" id="reloadBtn">Reload</button>
+          <button class="mini-btn" id="elevenTabBtn">ElevenLabs</button>
         </div>
-        <span id="hostLabel" style="font-family:monospace; color:#38bdf8; font-size:0.84rem;">https://elevenlabs.io/</span>
+        <span id="hostLabel" style="font-family:monospace; color:#38bdf8; font-size:0.84rem; overflow:hidden; text-overflow:ellipsis;">https://elevenlabs.io/</span>
         <button class="mini-btn" id="fullBtn">Full Screen</button>
       </div>
       <div class="right-placeholder" id="placeholder">
@@ -162,15 +207,15 @@
       hostLabel.textContent = url;
     });
 
-    document.getElementById("openElevenBtn").addEventListener("click", async () => {
+    async function openInsidePanel(url) {
       placeholder.style.display = "none";
-      hostLabel.textContent = await window.latifControl.openEmbeddedUrl("https://elevenlabs.io/");
-    });
+      hostLabel.textContent = await window.latifControl.openEmbeddedUrl(url);
+    }
 
-    document.getElementById("nordAccountBtn").addEventListener("click", async () => {
-      placeholder.style.display = "none";
-      hostLabel.textContent = await window.latifControl.openEmbeddedUrl("https://my.nordaccount.com/");
-    });
+    document.getElementById("openElevenBtn").addEventListener("click", () => openInsidePanel("https://elevenlabs.io/"));
+    document.getElementById("elevenTabBtn").addEventListener("click", () => openInsidePanel("https://elevenlabs.io/"));
+    document.getElementById("nordAccountBtn").addEventListener("click", () => openInsidePanel("https://my.nordaccount.com/"));
+    document.getElementById("tempMailWebBtn").addEventListener("click", () => openInsidePanel("https://mail.tm/"));
 
     document.getElementById("backBtn").addEventListener("click", () => window.latifControl.goBack());
     document.getElementById("reloadBtn").addEventListener("click", () => window.latifControl.reloadBrowser());
@@ -200,6 +245,102 @@
       if (res.connected === false) {
         statusPill.textContent = "Disconnected";
         statusPill.classList.remove("connected");
+      }
+    });
+
+    // Temp Mail (Mail.tm REST API, plain-text rendering via textContent only)
+    let tempAddress = "";
+    let tempToken = "";
+    const emailBox = document.getElementById("tempEmailBox");
+    const inboxList = document.getElementById("tempInboxList");
+    const tempNote = document.getElementById("tempMailNote");
+
+    function randomStr(chars, len) {
+      const arr = new Uint32Array(len);
+      crypto.getRandomValues(arr);
+      return Array.from(arr, (n) => chars[n % chars.length]).join("");
+    }
+
+    async function createTempEmail() {
+      tempNote.textContent = "Creating temporary inbox...";
+      try {
+        const dRes = await fetch("https://api.mail.tm/domains");
+        const dJson = await dRes.json();
+        const domainObj = (dJson["hydra:member"] || []).find((d) => d.isActive !== false);
+        if (!domainObj) throw new Error("No active domain available.");
+        const addr = "latif" + randomStr("abcdefghijklmnopqrstuvwxyz0123456789", 7) + "@" + domainObj.domain;
+        const pass = randomStr("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$", 18);
+        const accRes = await fetch("https://api.mail.tm/accounts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address: addr, password: pass })
+        });
+        if (!accRes.ok) throw new Error("Account creation failed (" + accRes.status + ")");
+        const tokRes = await fetch("https://api.mail.tm/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address: addr, password: pass })
+        });
+        const tokJson = await tokRes.json();
+        tempAddress = addr;
+        tempToken = tokJson.token || "";
+        emailBox.textContent = tempAddress;
+        inboxList.replaceChildren();
+        tempNote.textContent = "Ready: " + tempAddress;
+      } catch (err) {
+        tempNote.textContent = err.message || "Unable to create temp email.";
+      }
+    }
+
+    async function refreshTempInbox() {
+      if (!tempToken) return createTempEmail();
+      tempNote.textContent = "Checking inbox...";
+      try {
+        const res = await fetch("https://api.mail.tm/messages", {
+          headers: { Authorization: "Bearer " + tempToken }
+        });
+        const json = await res.json();
+        const msgs = json["hydra:member"] || [];
+        inboxList.replaceChildren();
+        if (msgs.length === 0) {
+          tempNote.textContent = "No messages yet.";
+          return;
+        }
+        tempNote.textContent = msgs.length + " message(s) received.";
+        msgs.slice(0, 6).forEach((m) => {
+          const item = document.createElement("div");
+          item.className = "msg-item";
+          const subj = document.createElement("strong");
+          subj.textContent = m.subject || "(No Subject)";
+          const meta = document.createElement("div");
+          meta.style.color = "#38bdf8";
+          meta.textContent = (m.from && m.from.address) ? m.from.address : "";
+          const intro = document.createElement("div");
+          intro.style.color = "#a3b4d4";
+          intro.textContent = m.intro || "";
+          item.append(subj, meta, intro);
+          item.addEventListener("click", async () => {
+            const safeId = String(m.id || "").replace(/[^A-Za-z0-9_-]/g, "");
+            if (!safeId) return;
+            const detailRes = await fetch("https://api.mail.tm/messages/" + safeId, {
+              headers: { Authorization: "Bearer " + tempToken }
+            });
+            const detail = await detailRes.json();
+            tempNote.textContent = (detail.text || m.intro || "").slice(0, 260);
+          });
+          inboxList.appendChild(item);
+        });
+      } catch (err) {
+        tempNote.textContent = err.message || "Refresh failed.";
+      }
+    }
+
+    document.getElementById("genEmailBtn").addEventListener("click", createTempEmail);
+    document.getElementById("refreshInboxBtn").addEventListener("click", refreshTempInbox);
+    document.getElementById("copyEmailBtn").addEventListener("click", () => {
+      if (tempAddress && navigator.clipboard) {
+        navigator.clipboard.writeText(tempAddress).catch(() => {});
+        tempNote.textContent = "Copied " + tempAddress;
       }
     });
   </script>
